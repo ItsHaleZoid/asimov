@@ -45,26 +45,7 @@ export default function Hero() {
         </h1>
         
         {/* CTA Button */}
-        <div className="flex flex-row gap-4">
-          <LiquidDropdown
-            variant="default" 
-            rounded="full"            
-            items={[{label: "NVIDIA A100", value: "NVIDIA A100"}]}
-            placeholder="SELECT A GPU"
-            
-            onChange={() => {}}
-            className="rounded-full font-medium transition-all duration-200 hover:scale-100 hover:shadow-lg"
-            size="xl"
-          />
-
-          <LiquidInput
-            variant="default"
-            size="xl"
-            placeholder="Search for an model"
-            className="w-full"
-            icon={<Search className="w-4 h-4 text-white" />}
-          />
-        </div>
+       
       </div>
       
       {/* Bottom Section */}
@@ -77,7 +58,7 @@ export default function Hero() {
           
           {/* Mission Text */}
           <div className="max-w-2xl text-gray-400 text-sm leading-relaxed">
-           Run and fine-tune open-source AI models with compute with any code or technical skills. You can select the models and compute from a range of GPUs and models or import your own..
+           Run and fine-tune open-sourced Kimi K2 by Moonshot without any code or technical skills. You can select the models and compute from a range of GPUs and models or import your own.
           </div>
         </div>
       </div>

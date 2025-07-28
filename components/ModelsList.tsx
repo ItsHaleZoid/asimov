@@ -58,7 +58,7 @@ export default function ModelsList() {
           companyLogo="/moonshot.png"
           buttonText="Run Model"
           modelImageSize={185}
-          modelImageClass="grayscale ml-20"
+          modelImageClass="grayscale -ml-10 pr-10 mt-8"
           
           companyLogoSize={50}
           

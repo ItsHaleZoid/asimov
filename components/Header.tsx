@@ -30,7 +30,7 @@ export default function Header({ className }: HeaderProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center justify-center space-x-8 ml-18">
+        <nav className="hidden md:flex items-center justify-center space-x-8 ml-40">
           <a 
             href="#" 
             className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}

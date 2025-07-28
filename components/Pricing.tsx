@@ -17,7 +17,7 @@ export default function Pricing() {
                
                 <PricingCard
                         title="Starter"
-                        price="$6"
+                        price="$"
                         details="For personal use and playing around with AI"
                         size="lg"
                         period="monthly"
