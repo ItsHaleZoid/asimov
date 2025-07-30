@@ -22,20 +22,20 @@ const spaceGrotesk = Space_Grotesk({
 export default function Header({ className }: HeaderProps) {
   const router = useRouter();
   return (
-    <header className={`fixed  left-0 right-0 w-full z-500 backdrop-blur-sm border-b border-white/25 bg-gradient-to-b from-[#451cff]/30 via-violet-700/0 to-black/9 ${className}`}>
+    <header className={`fixed  left-0 right-0 w-full z-500 backdrop-blur-sm border-b border-white/25 ${className}`}>
       <div className="flex items-center justify-between px-6 py-4 md:px-8 lg:px-12">
         {/* Logo */}
         <div className="flex items-center">
-          <img src="/logo-flat-transparent.png" alt="Logo" className="h-20 w-auto absolute" />
+          <img src="/logo-flat-transparent.png" alt="Logo" className="h-20 w-auto absolute cursor-pointer" onClick={() => router.push('/')} />
         </div>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center justify-center space-x-8 ml-40">
+        <nav className="hidden md:flex items-center justify-center space-x-8 ml-62">
           <a 
             href="#" 
             className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
           >
-            Gallery
+            Models
           </a>
           <a 
             href="#" 
@@ -47,7 +47,7 @@ export default function Header({ className }: HeaderProps) {
             href="#" 
             className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
           >
-            About
+            How to use it
           </a>
         </nav>
 
@@ -60,6 +60,8 @@ export default function Header({ className }: HeaderProps) {
             <LiquidButton
               className={`${gabarito.className} px-6 py-2 rounded-100px font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg`}
               size="xl"
+              onClick={() => router.push('/get-started')}
+              roundness="full"
               style={{
                 background: "linear-gradient(135deg, #000dff 0%, #6600ff 100%)",
                 color: "white",

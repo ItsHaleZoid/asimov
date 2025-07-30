@@ -3,13 +3,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { BsGoogle } from "react-icons/bs";
 import { BlurFade } from "@/components/ui/blur-fade";
 
-interface SignInPageProps {
+interface GetStartedPageProps {
   className?: string;
 }
 
-export const SignInPage = ({ className }: SignInPageProps) => {
+export default function GetStartedPage() {
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"email" | "code" | "success">("email");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
@@ -78,7 +79,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
          style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
     </div>
    
-      <div className={cn("flex w-[100%] flex-col min-h-screen relative bg-white/2 backdrop-blur-sm", className)}>
+      <div className={cn("flex w-[100%] flex-col min-h-screen relative bg-white/2 backdrop-blur-sm")}>
         <div className="absolute inset-0 z-0">
         </div>
         
@@ -93,8 +94,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                   <div className="space-y-6 text-center">
                     <BlurFade delay={0.1} inView>
                       <div className="space-y-1 ">
-                        <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">Welcome to AsimovAI</h1>
-                        <p className="text-[1.2rem] text-white/70 font-light">Sign in to your account</p>
+                        <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">Get Started with AsimovAI</h1>
+                        <p className="text-[1.2rem] text-white/70 font-light">Create your account</p>
                       </div>
                     </BlurFade>
                     
@@ -102,8 +103,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     <div className="space-y-4">
                       <BlurFade delay={0.2} inView>
                         <button className="backdrop-blur-[2px] w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors">
-                          <span className="text-lg">G</span>
-                          <span>Sign in with Google</span>
+                          <BsGoogle className="text-lg" />
+                          <span>Sign up with Google</span>
                         </button>
                       </BlurFade>
                       
@@ -146,7 +147,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     
                     <BlurFade delay={0.5} inView>
                       <p className="text-xs text-white/80 pt-10">
-                        By signing up, you agree to the <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">Terms of Service</Link>, <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">Privacy Policy</Link>.
+                        By creating an account, you agree to the <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">Terms of Service</Link>, <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">Privacy Policy</Link>.
                       </p>
                     </BlurFade>
                   </div>
@@ -226,7 +227,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     <BlurFade delay={0.5} inView>
                       <div className="pt-16">
                         <p className="text-xs text-white/40">
-                          By signing up, you agree to the <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">MSA</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Product Terms</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Policies</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Privacy Notice</Link>, and <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Cookie Notice</Link>.
+                          By creating an account, you agree to the <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">MSA</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Product Terms</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Policies</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Privacy Notice</Link>, and <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Cookie Notice</Link>.
                         </p>
                       </div>
                     </BlurFade>
@@ -267,5 +268,3 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     </div>
   );
 };
-
-export default SignInPage;

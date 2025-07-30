@@ -66,8 +66,8 @@ const LiquidInput = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           className={cn(
-            "relative z-10 w-full h-full bg-transparent outline-none px-4 py-2 transition-all duration-300 ease-out group-hover:scale-105 group-focus-within:scale-95",
-            icon && ""
+            "relative z-10 w-full h-full bg-transparent outline-none py-2 transition-all duration-300 ease-out group-hover:scale-105 group-focus-within:scale-95",
+            icon ? "pl-12 pr-4" : "px-4"
           )}
           {...props}
         />

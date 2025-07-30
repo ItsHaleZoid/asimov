@@ -59,7 +59,7 @@ Button.displayName = "Button"
 export { Button, buttonVariants, liquidbuttonVariants, LiquidButton }
 
 const liquidbuttonVariants = cva(
-  "inline-flex items-center transition-colors justify-center cursor-pointer gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow,transform] duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center transition-colors justify-center cursor-pointer gap-2 whitespace-nowrap text-sm font-medium transition-[color,box-shadow,transform] duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
@@ -76,15 +76,24 @@ const liquidbuttonVariants = cva(
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 text-xs gap-1.5 px-4 has-[>svg]:px-4",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        xl: "h-12 rounded-md px-8 has-[>svg]:px-6",
-        xxl: "h-14 rounded-md px-10 has-[>svg]:px-8",
+        lg: "h-10 px-6 has-[>svg]:px-4",
+        xl: "h-12 px-8 has-[>svg]:px-6",
+        xxl: "h-14 px-10 has-[>svg]:px-8",
         icon: "size-9",
+      },
+      roundness: {
+        none: "rounded-none",
+        sm: "rounded-sm",
+        md: "rounded-md",
+        lg: "rounded-lg",
+        xl: "rounded-xl",
+        full: "rounded-full",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "xxl",
+      roundness: "md",
     },
   }
 )
@@ -93,6 +102,7 @@ function LiquidButton({
   className,
   variant,
   size,
+  roundness,
   asChild = false,
   children,
   ...props
@@ -108,18 +118,21 @@ function LiquidButton({
         data-slot="button"
         className={cn(
           "relative group",
-          liquidbuttonVariants({ variant, size, className })
+          liquidbuttonVariants({ variant, size, roundness, className })
         )}
         {...props}
       >
-        <div className="absolute top-0 left-0 z-0 h-full w-full rounded-full 
-            shadow-[0_0_6px_rgba(0,0,0,0.03),0_2px_6px_rgba(0,0,0,0.08),inset_3px_3px_0.5px_-3px_rgba(0,0,0,0.9),inset_-3px_-3px_0.5px_-3px_rgba(0,0,0,0.85),inset_1px_1px_1px_-0.5px_rgba(0,0,0,0.6),inset_-1px_-1px_1px_-0.5px_rgba(0,0,0,0.6),inset_0_0_6px_6px_rgba(0,0,0,0.12),inset_0_0_2px_2px_rgba(0,0,0,0.06),0_0_12px_rgba(255,255,255,0.15)] 
-        transition-all duration-300 ease-out
-        group-hover:shadow-[0_0_8px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.12),inset_3px_3px_0.5px_-3px_rgba(0,0,0,0.95),inset_-3px_-3px_0.5px_-3px_rgba(0,0,0,0.9),inset_1px_1px_1px_-0.5px_rgba(0,0,0,0.7),inset_-1px_-1px_1px_-0.5px_rgba(0,0,0,0.7),inset_0_0_8px_8px_rgba(0,0,0,0.18),inset_0_0_4px_4px_rgba(0,0,0,0.1),0_0_16px_rgba(255,255,255,0.25)]
-        group-active:shadow-[0_0_4px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.06),inset_2px_2px_0.5px_-2px_rgba(0,0,0,0.8),inset_-2px_-2px_0.5px_-2px_rgba(0,0,0,0.75),inset_0.5px_0.5px_0.5px_-0.25px_rgba(0,0,0,0.5),inset_-0.5px_-0.5px_0.5px_-0.25px_rgba(0,0,0,0.5),inset_0_0_4px_4px_rgba(0,0,0,0.08),inset_0_0_1px_1px_rgba(0,0,0,0.04),0_0_8px_rgba(255,255,255,0.1)]
-        dark:shadow-[0_0_8px_rgba(0,0,0,0.03),0_2px_6px_rgba(0,0,0,0.08),inset_3px_3px_0.5px_-3.5px_rgba(255,255,255,0.09),inset_-3px_-3px_0.5px_-3.5px_rgba(255,255,255,0.85),inset_1px_1px_1px_-0.5px_rgba(255,255,255,0.6),inset_-1px_-1px_1px_-0.5px_rgba(255,255,255,0.6),inset_0_0_6px_6px_rgba(255,255,255,0.12),inset_0_0_2px_2px_rgba(255,255,255,0.06),0_0_12px_rgba(0,0,0,0.15)]
-        dark:group-hover:shadow-[0_0_12px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.12),inset_3px_3px_0.5px_-3.5px_rgba(255,255,255,0.12),inset_-3px_-3px_0.5px_-3.5px_rgba(255,255,255,0.9),inset_1px_1px_1px_-0.5px_rgba(255,255,255,0.7),inset_-1px_-1px_1px_-0.5px_rgba(255,255,255,0.7),inset_0_0_8px_8px_rgba(255,255,255,0.18),inset_0_0_4px_4px_rgba(255,255,255,0.1),0_0_16px_rgba(0,0,0,0.25)]
-        dark:group-active:shadow-[0_0_4px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.06),inset_2px_2px_0.5px_-2px_rgba(255,255,255,0.06),inset_-2px_-2px_0.5px_-2px_rgba(255,255,255,0.75),inset_0.5px_0.5px_0.5px_-0.25px_rgba(255,255,255,0.5),inset_-0.5px_-0.5px_0.5px_-0.25px_rgba(255,255,255,0.5),inset_0_0_4px_4px_rgba(255,255,255,0.08),inset_0_0_1px_1px_rgba(255,255,255,0.04),0_0_8px_rgba(0,0,0,0.1)]" />
+        <div className={cn(
+          "absolute top-0 left-0 z-0 h-full w-full shadow-[0_0_6px_rgba(0,0,0,0.03),0_2px_6px_rgba(0,0,0,0.08),inset_3px_3px_0.5px_-3px_rgba(0,0,0,0.9),inset_-3px_-3px_0.5px_-3px_rgba(0,0,0,0.85),inset_1px_1px_1px_-0.5px_rgba(0,0,0,0.6),inset_-1px_-1px_1px_-0.5px_rgba(0,0,0,0.6),inset_0_0_6px_6px_rgba(0,0,0,0.12),inset_0_0_2px_2px_rgba(0,0,0,0.06),0_0_12px_rgba(255,255,255,0.15)] transition-all duration-300 ease-out group-hover:shadow-[0_0_8px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.12),inset_3px_3px_0.5px_-3px_rgba(0,0,0,0.95),inset_-3px_-3px_0.5px_-3px_rgba(0,0,0,0.9),inset_1px_1px_1px_-0.5px_rgba(0,0,0,0.7),inset_-1px_-1px_1px_-0.5px_rgba(0,0,0,0.7),inset_0_0_8px_8px_rgba(0,0,0,0.18),inset_0_0_4px_4px_rgba(0,0,0,0.1),0_0_16px_rgba(255,255,255,0.25)] group-active:shadow-[0_0_4px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.06),inset_2px_2px_0.5px_-2px_rgba(0,0,0,0.8),inset_-2px_-2px_0.5px_-2px_rgba(0,0,0,0.75),inset_0.5px_0.5px_0.5px_-0.25px_rgba(0,0,0,0.5),inset_-0.5px_-0.5px_0.5px_-0.25px_rgba(0,0,0,0.5),inset_0_0_4px_4px_rgba(0,0,0,0.08),inset_0_0_1px_1px_rgba(0,0,0,0.04),0_0_8px_rgba(255,255,255,0.1)] dark:shadow-[0_0_8px_rgba(0,0,0,0.03),0_2px_6px_rgba(0,0,0,0.08),inset_3px_3px_0.5px_-3.5px_rgba(255,255,255,0.09),inset_-3px_-3px_0.5px_-3.5px_rgba(255,255,255,0.85),inset_1px_1px_1px_-0.5px_rgba(255,255,255,0.6),inset_-1px_-1px_1px_-0.5px_rgba(255,255,255,0.6),inset_0_0_6px_6px_rgba(255,255,255,0.12),inset_0_0_2px_2px_rgba(255,255,255,0.06),0_0_12px_rgba(0,0,0,0.15)] dark:group-hover:shadow-[0_0_12px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.12),inset_3px_3px_0.5px_-3.5px_rgba(255,255,255,0.12),inset_-3px_-3px_0.5px_-3.5px_rgba(255,255,255,0.9),inset_1px_1px_1px_-0.5px_rgba(255,255,255,0.7),inset_-1px_-1px_1px_-0.5px_rgba(255,255,255,0.7),inset_0_0_8px_8px_rgba(255,255,255,0.18),inset_0_0_4px_4px_rgba(255,255,255,0.1),0_0_16px_rgba(0,0,0,0.25)] dark:group-active:shadow-[0_0_4px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.06),inset_2px_2px_0.5px_-2px_rgba(255,255,255,0.06),inset_-2px_-2px_0.5px_-2px_rgba(255,255,255,0.75),inset_0.5px_0.5px_0.5px_-0.25px_rgba(255,255,255,0.5),inset_-0.5px_-0.5px_0.5px_-0.25px_rgba(255,255,255,0.5),inset_0_0_4px_4px_rgba(255,255,255,0.08),inset_0_0_1px_1px_rgba(255,255,255,0.04),0_0_8px_rgba(0,0,0,0.1)]",
+          {
+            "rounded-none": roundness === "none",
+            "rounded-sm": roundness === "sm", 
+            "rounded-md": roundness === "md" || !roundness,
+            "rounded-lg": roundness === "lg",
+            "rounded-xl": roundness === "xl",
+            "rounded-full": roundness === "full",
+          }
+        )} />
       
 
         <div className="pointer-events-none z-10 transition-all duration-300 ease-out group-hover:scale-105 group-active:scale-95">
@@ -184,10 +197,13 @@ type ColorVariant =
   | "error"
   | "gold"
   | "bronze";
+
+type RoundnessVariant = "none" | "sm" | "md" | "lg" | "xl" | "full";
  
 interface MetalButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ColorVariant;
+  roundness?: RoundnessVariant;
 }
  
 const colorVariants: Record<
@@ -243,20 +259,32 @@ const colorVariants: Record<
     textShadow: "[text-shadow:_0_-1px_0_rgb(124_45_18_/_100%)]",
   },
 };
+
+const roundnessClasses: Record<RoundnessVariant, string> = {
+  none: "rounded-none",
+  sm: "rounded-sm",
+  md: "rounded-md",
+  lg: "rounded-lg",
+  xl: "rounded-xl",
+  full: "rounded-full",
+};
  
 const metalButtonVariants = (
   variant: ColorVariant = "default",
+  roundness: RoundnessVariant = "md",
   isPressed: boolean,
   isHovered: boolean,
   isTouchDevice: boolean,
 ) => {
   const colors = colorVariants[variant];
+  const roundnessClass = roundnessClasses[roundness];
   const transitionStyle = "all 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275)";
  
   return {
     wrapper: cn(
-      "relative inline-flex transform-gpu rounded-md p-[1.25px] will-change-transform transition-all duration-300",
+      "relative inline-flex transform-gpu p-[1.25px] will-change-transform transition-all duration-300",
       colors.outer,
+      roundnessClass,
     ),
     wrapperStyle: {
       transform: isPressed
@@ -274,8 +302,14 @@ const metalButtonVariants = (
       transformStyle: "preserve-3d",
     },
     inner: cn(
-      "absolute inset-[1px] transform-gpu rounded-lg will-change-transform transition-all duration-300",
+      "absolute inset-[1px] transform-gpu will-change-transform transition-all duration-300",
       colors.inner,
+      roundnessClass === "rounded-none" ? "rounded-none" : 
+      roundnessClass === "rounded-sm" ? "rounded-sm" :
+      roundnessClass === "rounded-md" ? "rounded-lg" :
+      roundnessClass === "rounded-lg" ? "rounded-lg" :
+      roundnessClass === "rounded-xl" ? "rounded-xl" :
+      "rounded-full",
     ),
     innerStyle: {
       transition: transitionStyle,
@@ -292,10 +326,16 @@ const metalButtonVariants = (
         : "scale(1)",
     },
     button: cn(
-      "relative z-10 m-[1px] rounded-md inline-flex h-11 transform-gpu cursor-pointer items-center justify-center overflow-hidden rounded-md px-6 py-2 text-sm leading-none font-semibold will-change-transform outline-none transition-all duration-300",
+      "relative z-10 m-[1px] inline-flex h-11 transform-gpu cursor-pointer items-center justify-center overflow-hidden px-6 py-2 text-sm leading-none font-semibold will-change-transform outline-none transition-all duration-300",
       colors.button,
       colors.textColor,
       colors.textShadow,
+      roundnessClass === "rounded-none" ? "rounded-none" : 
+      roundnessClass === "rounded-sm" ? "rounded-sm" :
+      roundnessClass === "rounded-md" ? "rounded-md" :
+      roundnessClass === "rounded-lg" ? "rounded-lg" :
+      roundnessClass === "rounded-xl" ? "rounded-xl" :
+      "rounded-full",
     ),
     buttonStyle: {
       transform: isPressed 
@@ -314,16 +354,19 @@ const metalButtonVariants = (
   };
 };
  
-const ShineEffect = ({ isPressed, isHovered }: { isPressed: boolean; isHovered: boolean }) => {
+const ShineEffect = ({ isPressed, isHovered, roundness }: { isPressed: boolean; isHovered: boolean; roundness: RoundnessVariant }) => {
+  const roundnessClass = roundnessClasses[roundness];
+  
   return (
     <div
       className={cn(
         "pointer-events-none absolute inset-0 z-20 overflow-hidden transition-all duration-500 ease-out",
+        roundnessClass,
         isPressed ? "opacity-40 scale-110" : isHovered ? "opacity-30 scale-105" : "opacity-0 scale-100",
       )}
     >
-      <div className="absolute inset-0 rounded-md bg-gradient-to-r from-transparent via-neutral-100 to-transparent animate-pulse" />
-      <div className="absolute top-0 left-0 w-full h-full rounded-md bg-gradient-to-br from-white/20 via-transparent to-transparent" />
+      <div className={cn("absolute inset-0 bg-gradient-to-r from-transparent via-neutral-100 to-transparent animate-pulse", roundnessClass)} />
+      <div className={cn("absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/20 via-transparent to-transparent", roundnessClass)} />
     </div>
   );
 };
@@ -331,7 +374,7 @@ const ShineEffect = ({ isPressed, isHovered }: { isPressed: boolean; isHovered: 
 export const MetalButton = React.forwardRef<
   HTMLButtonElement,
   MetalButtonProps
->(({ children, className, variant = "default", ...props }, ref) => {
+>(({ children, className, variant = "default", roundness = "md", ...props }, ref) => {
   const [isPressed, setIsPressed] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
   const [isTouchDevice, setIsTouchDevice] = React.useState(false);
@@ -343,6 +386,7 @@ export const MetalButton = React.forwardRef<
   const buttonText = children || "Button";
   const variants = metalButtonVariants(
     variant,
+    roundness,
     isPressed,
     isHovered,
     isTouchDevice,
@@ -389,10 +433,10 @@ export const MetalButton = React.forwardRef<
         onTouchEnd={handleInternalTouchEnd}
         onTouchCancel={handleInternalTouchCancel}
       >
-        <ShineEffect isPressed={isPressed} isHovered={isHovered} />
+        <ShineEffect isPressed={isPressed} isHovered={isHovered} roundness={roundness} />
         <span className="relative z-30 transition-all duration-300">{buttonText}</span>
         {isHovered && !isPressed && !isTouchDevice && (
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t rounded-lg from-transparent to-white/10 transition-opacity duration-300 animate-pulse" />
+          <div className={cn("pointer-events-none absolute inset-0 bg-gradient-to-t from-transparent to-white/10 transition-opacity duration-300 animate-pulse", roundnessClasses[roundness])} />
         )}
       </button>
     </div>

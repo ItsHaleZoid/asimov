@@ -27,7 +27,7 @@ export default function ModelsList() {
 
         <ModelBox 
           modelName="Llama 4"
-          modelCompany="Google"
+          modelCompany="Meta"
           modelImage="/llama.png"
           companyLogo="/meta.png"
           buttonText="Run Model"
@@ -39,7 +39,7 @@ export default function ModelsList() {
 
         <ModelBox 
           modelName="Flux.1 "
-          modelCompany="Meta"
+          modelCompany="Black-Forest-Labs"
           modelImage="/flux.png"
           companyLogo="/flux.png"
           buttonText="Run Model"
