@@ -8,6 +8,7 @@ interface Dataset {
   name: string
   description: string
   downloads: number
+  hf_link: string
   likes: number
   category: 'mistral' | 'gemma' | 'flux' | 'general'
 }
@@ -25,6 +26,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'mistral-instruct-v0.2',
     description: 'Official Mistral instruction-following dataset optimized for chat',
     downloads: 145000,
+    hf_link: 'https://huggingface.co/datasets/mistralai/mistral-instruct-v0.2',
     likes: 2800,
     category: 'mistral'
   },
@@ -33,6 +35,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'open-orca-mistral',
     description: 'Large-scale instruction tuning dataset formatted for Mistral models',
     downloads: 98000,
+    hf_link: 'https://huggingface.co/datasets/mistralai/open-orca-mistral',
     likes: 1950,
     category: 'mistral'
   },
@@ -41,6 +44,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'code-mistral-7b',
     description: 'Code instruction dataset specifically tuned for Mistral 7B',
     downloads: 76000,
+    hf_link: 'https://huggingface.co/datasets/mistralai/code-mistral-7b',
     likes: 1520,
     category: 'mistral'
   },
@@ -49,6 +53,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'mistral-math-reasoning',
     description: 'Mathematical reasoning dataset optimized for Mistral architecture',
     downloads: 52000,
+    hf_link: 'https://huggingface.co/datasets/mistralai/mistral-math-reasoning',
     likes: 1100,
     category: 'mistral'
   },
@@ -59,6 +64,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'gemma-instruction-tuning',
     description: 'Google Gemma optimized instruction-following dataset',
     downloads: 134000,
+    hf_link: 'https://huggingface.co/datasets/google/gemma-instruction-tuning',
     likes: 2650,
     category: 'gemma'
   },
@@ -67,6 +73,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'gemma-code-assist',
     description: 'Code generation and assistance dataset for Gemma models',
     downloads: 89000,
+    hf_link: 'https://huggingface.co/datasets/google/gemma-code-assist',
     likes: 1780,
     category: 'gemma'
   },
@@ -75,6 +82,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'gemma-safety-aligned',
     description: 'Safety-aligned conversational dataset for responsible AI',
     downloads: 67000,
+    hf_link: 'https://huggingface.co/datasets/google/gemma-safety-aligned',
     likes: 1340,
     category: 'gemma'
   },
@@ -83,6 +91,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'gemma-multilingual',
     description: 'Multilingual instruction dataset supporting 50+ languages',
     downloads: 43000,
+    hf_link: 'https://huggingface.co/datasets/google/gemma-multilingual',
     likes: 890,
     category: 'gemma'
   },
@@ -93,6 +102,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'flux-style-transfer',
     description: 'Artistic style transfer dataset for FLUX image generation',
     downloads: 156000,
+    hf_link: 'https://huggingface.co/datasets/google/flux-style-transfer',
     likes: 3200,
     category: 'flux'
   },
@@ -101,6 +111,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'flux-portraits',
     description: 'High-quality portrait generation dataset with diverse subjects',
     downloads: 123000,
+    hf_link: 'https://huggingface.co/datasets/google/flux-portraits',
     likes: 2890,
     category: 'flux'
   },
@@ -109,6 +120,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'flux-architecture',
     description: 'Architectural and building design dataset for FLUX models',
     downloads: 78000,
+    hf_link: 'https://huggingface.co/datasets/google/flux-architecture',
     likes: 1670,
     category: 'flux'
   },
@@ -117,6 +129,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'flux-concept-art',
     description: 'Fantasy and sci-fi concept art dataset for creative generation',
     downloads: 94000,
+    hf_link: 'https://huggingface.co/datasets/google/flux-concept-art',
     likes: 2100,
     category: 'flux'
   },
@@ -125,6 +138,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'flux-product-design',
     description: 'Product design and visualization dataset for commercial use',
     downloads: 65000,
+    hf_link: 'https://huggingface.co/datasets/google/flux-product-design',
     likes: 1450,
     category: 'flux'
   },
@@ -135,6 +149,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'alpaca-gpt4-data',
     description: 'GPT-4 generated instruction-following dataset (universal)',
     downloads: 187000,
+    hf_link: 'https://huggingface.co/datasets/google/alpaca-gpt4-data',
     likes: 3400,
     category: 'general'
   },
@@ -143,6 +158,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'dolly-15k',
     description: 'High-quality human-generated instruction following dataset',
     downloads: 142000,
+    hf_link: 'https://huggingface.co/datasets/google/dolly-15k',
     likes: 2600,
     category: 'general'
   },
@@ -151,6 +167,7 @@ const MOCK_DATASETS: Dataset[] = [
     name: 'common-crawl-filter',
     description: 'Filtered and cleaned Common Crawl web data',
     downloads: 234000,
+    hf_link: 'https://huggingface.co/datasets/google/common-crawl-filter',
     likes: 4100,
     category: 'general'
   }
