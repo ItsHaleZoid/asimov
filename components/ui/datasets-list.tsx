@@ -14,9 +14,10 @@ interface Dataset {
 }
 
 interface DatasetsListProps {
-  searchQuery: string
+  searchQuery?: string
   modelFamily?: 'mistral' | 'gemma' | 'flux'
   onDatasetSelect?: (dataset: Dataset) => void
+  selectedDataset?: { hf_link: string } | null
 }
 
 const MOCK_DATASETS: Dataset[] = [
@@ -173,16 +174,10 @@ const MOCK_DATASETS: Dataset[] = [
   }
 ]
 
-export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect }: DatasetsListProps) {
+export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect, selectedDataset }: DatasetsListProps) {
   const [filteredDatasets, setFilteredDatasets] = useState<Dataset[]>([])
 
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredDatasets([])
-      return
-    }
-
-    // Filter by model family first, then by search query
     let datasetsToSearch = MOCK_DATASETS
     if (modelFamily) {
       datasetsToSearch = MOCK_DATASETS.filter(dataset => 
@@ -190,16 +185,16 @@ export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect
       )
     }
 
-    const filtered = datasetsToSearch.filter(dataset =>
-      dataset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dataset.description.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    setFilteredDatasets(filtered)
+    if (searchQuery?.trim()) {
+      const filtered = datasetsToSearch.filter(dataset =>
+        dataset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        dataset.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredDatasets(filtered)
+    } else {
+      setFilteredDatasets(datasetsToSearch)
+    }
   }, [searchQuery, modelFamily])
-
-  if (!searchQuery.trim()) {
-    return null
-  }
 
   return (
     <div className="w-full">
@@ -230,7 +225,7 @@ export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect
               <div
                 key={dataset.id}
                 onClick={() => onDatasetSelect?.(dataset)}
-                className="p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group"
+                className={`p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors group ${selectedDataset?.hf_link === dataset.hf_link ? 'bg-white/10' : ''}`}
               >
                 <div className="flex items-start gap-3">
                   <Database className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
@@ -251,11 +246,13 @@ export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect
             ))}
           </div>
         ) : (
+          searchQuery?.trim() && (
           <div className="p-4 text-center text-white/60">
             <SearchIcon className="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p className="text-sm">No datasets found for "{searchQuery}"</p>
             <p className="text-xs mt-1 opacity-60">Try a different search term</p>
           </div>
+          )
         )}
       </div>
     </div>
