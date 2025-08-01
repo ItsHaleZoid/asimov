@@ -73,7 +73,7 @@ export default function Hero() {
         <div className="flex flex-row gap-4">
         <LiquidDropdown
           placeholder="Select Model"
-          className={`${spaceGrotesk.className} font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg text-xs`}
+          className={`${spaceGrotesk.className} font-medium transition-all duration-200 hover:shadow-lg text-xs`}
           size="xl"
          
           rounded="full"
@@ -87,9 +87,9 @@ export default function Hero() {
           onChange={setSelectedModel}
         />
         <LiquidButton
-          className={`${spaceGrotesk.className} font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg text-xs`}
+          className={`${spaceGrotesk.className} font-medium transition-all duration-200 hover:scale-95 hover:shadow-lg text-xs`}
           size="xl"
-          roundness="none"
+          rounded="none"
           variant="destructive"
           onClick={handleFineTuneClick}
           style={{

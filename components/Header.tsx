@@ -2,12 +2,17 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Gabarito, Space_Grotesk } from "next/font/google";
+import { Gabarito, Geist, Space_Grotesk, Inter } from "next/font/google";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 
 interface HeaderProps {
   className?: string;
 }
+
+const geist = Geist({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+});
 
 const gabarito = Gabarito({
   weight: ["400"],
@@ -19,18 +24,28 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+});
+
 export default function Header({ className }: HeaderProps) {
   const router = useRouter();
   return (
     <header className={`fixed  left-0 right-0 w-full z-500 backdrop-blur-sm border-b border-white/25 ${className}`}>
       <div className="flex items-center justify-between px-6 py-4 md:px-8 lg:px-12">
         {/* Logo */}
-        <div className="flex items-center">
-          <img src="/logo-flat-transparent.png" alt="Logo" className="h-20 w-auto absolute cursor-pointer" onClick={() => router.push('/')} />
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
+          
+          <img src="/logo-flat-transparent.png" alt="Logo" className="h-19 -my-3 w-auto cursor-pointer" onClick={() => router.push('/')} />
+        
+          
         </div>
 
+      
+
         {/* Navigation */}
-        <nav className="hidden md:flex items-center justify-center space-x-8 ml-62">
+        <nav className="hidden md:flex items-center justify-center space-x-8 ml-21">
           <a 
             href="#" 
             className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
@@ -56,22 +71,22 @@ export default function Header({ className }: HeaderProps) {
           <button className={`${gabarito.className} hidden sm:block px-4 py-2 text-white/80 hover:text-white transition-colors duration-200 font-medium`} onClick={() => router.push('/signin')}>
             Sign In
           </button>
-          <div className="overflow-hidden rounded-full">
+          
             <LiquidButton
-              className={`${gabarito.className} px-6 py-2 rounded-100px font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg`}
+              className={`${gabarito.className} px-6 py-2 font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg`}
               size="xl"
               onClick={() => router.push('/get-started')}
-              roundness="full"
+              rounded="full"
               style={{
                 background: "linear-gradient(135deg, #000dff 0%, #6600ff 100%)",
                 color: "white",
-                borderRadius: "100px"
+                
               }}
              
             >
               Get Started
             </LiquidButton>
-          </div>
+          
         </div>
 
         {/* Mobile menu button */}

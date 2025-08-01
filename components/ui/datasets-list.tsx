@@ -24,11 +24,11 @@ const MOCK_DATASETS: Dataset[] = [
   // Mistral-specific datasets
   {
     id: '1',
-    name: 'mistral-instruct-v0.2',
-    description: 'Official Mistral instruction-following dataset optimized for chat',
+    name: 'Awesome ChatGPT Prompts',
+    description: 'A curated list of prompts for ChatGPT',
     downloads: 145000,
-    hf_link: 'https://huggingface.co/datasets/mistralai/mistral-instruct-v0.2',
-    likes: 2800,
+    hf_link: 'fka/awesome-chatgpt-prompts',
+    likes: 85200,
     category: 'mistral'
   },
   {
@@ -171,6 +171,15 @@ const MOCK_DATASETS: Dataset[] = [
     hf_link: 'https://huggingface.co/datasets/google/common-crawl-filter',
     likes: 4100,
     category: 'general'
+  },
+  {
+    id: '17',
+    name: 'Microsoft rStar Coder',
+    description: 'A dataset of code examples by Microsoft',
+    downloads: 234000,
+    hf_link: 'microsoft/rStar-Coder',
+    likes: 4100,
+    category: 'mistral'
   }
 ]
 
@@ -192,9 +201,14 @@ export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect
       )
       setFilteredDatasets(filtered)
     } else {
-      setFilteredDatasets(datasetsToSearch)
+      setFilteredDatasets([])
     }
   }, [searchQuery, modelFamily])
+
+  // Don't render anything if there's no search query
+  if (!searchQuery?.trim()) {
+    return null
+  }
 
   return (
     <div className="w-full">
@@ -246,13 +260,11 @@ export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect
             ))}
           </div>
         ) : (
-          searchQuery?.trim() && (
           <div className="p-4 text-center text-white/60">
             <SearchIcon className="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p className="text-sm">No datasets found for "{searchQuery}"</p>
             <p className="text-xs mt-1 opacity-60">Try a different search term</p>
           </div>
-          )
         )}
       </div>
     </div>
