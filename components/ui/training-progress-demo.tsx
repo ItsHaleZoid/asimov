@@ -3,10 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
-import { ChevronDown, ChevronUp, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { ChevronDown, ChevronUp, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-interface TrainingProgressProps {
+interface TrainingProgressDemoProps {
   job: {
     id: string;
     status: string;
@@ -22,35 +21,28 @@ interface TrainingProgressProps {
   };
   onCancel: () => void;
   onBackToModels: () => void;
-  enablePolling?: boolean;
-  onJobUpdate?: (updatedJob: any) => void;
 }
 
-export default function TrainingProgress({ job, onCancel, onBackToModels, enablePolling = false, onJobUpdate }: TrainingProgressProps) {
+export default function TrainingProgressDemo({ job, onCancel, onBackToModels }: TrainingProgressDemoProps) {
   const [showLogs, setShowLogs] = useState(false);
   const [elapsedTime, setElapsedTime] = useState('00:00:00');
-  const router = useRouter();
-  useEffect(() => {
-    let statusInterval: NodeJS.Timeout | null = null;
-    
-    if (enablePolling) {
-      const fetchJobStatus = async () => {
-        try {
-          const response = await fetch(`http://localhost:8000/api/job/${job.id}`);
-          if (response.ok) {
-            const updatedJob = await response.json();
-            if (onJobUpdate) {
-              onJobUpdate(updatedJob);
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch job status:', error);
-        }
-      };
+  const [animatedProgress, setAnimatedProgress] = useState(0);
 
-      statusInterval = setInterval(fetchJobStatus, 5000);
-    }
-    
+  // Animate progress changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAnimatedProgress((prev) => {
+        const diff = job.progress - prev;
+        if (Math.abs(diff) < 0.1) return job.progress;
+        return prev + diff * 0.1;
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [job.progress]);
+
+  // Update elapsed time
+  useEffect(() => {
     const timeInterval = setInterval(() => {
       const start = new Date(job.start_time).getTime();
       const now = new Date().getTime();
@@ -67,11 +59,8 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
       );
     }, 1000);
 
-    return () => {
-      if (statusInterval) clearInterval(statusInterval);
-      clearInterval(timeInterval);
-    };
-  }, [job.id, job.start_time, enablePolling]);
+    return () => clearInterval(timeInterval);
+  }, [job.start_time]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -147,6 +136,11 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
         <p className="text-xl text-white/60">
           {job.model_name} with {job.dataset_name} Dataset
         </p>
+        <div className="mt-4 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg inline-block">
+          <p className="text-yellow-500 text-sm">
+            🎭 UI Demo Mode - No real training is happening
+          </p>
+        </div>
       </div>
 
       {/* Main Progress Card */}
@@ -179,13 +173,13 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
             <div className="mb-8">
               <div className="flex justify-between items-center mb-2">
                 <p className="text-white/60 text-sm">Progress</p>
-                <p className="text-white/60 text-sm">{job.progress}%</p>
+                <p className="text-white/60 text-sm">{Math.round(animatedProgress)}%</p>
               </div>
               <div className="relative h-4 bg-white/5 rounded-full overflow-hidden">
                 <motion.div
                   className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-blue-500"
                   initial={{ width: 0 }}
-                  animate={{ width: `${job.progress}%` }}
+                  animate={{ width: `${animatedProgress}%` }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
                 />
                 {/* Shimmer effect */}
@@ -207,7 +201,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
           {/* Visual Progress Indicators */}
           <div className="grid grid-cols-4 gap-4 mb-8">
             {['Setup', 'GPU Allocation', 'Training', 'Finalization'].map((stage, index) => {
-              const stageProgress = job.progress / 25 - index;
+              const stageProgress = animatedProgress / 25 - index;
               const isActive = stageProgress > 0;
               const isComplete = stageProgress >= 1;
               
@@ -325,7 +319,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
             ) : (
               <>
                 <LiquidButton
-                  onClick={() => router.back()}
+                  onClick={onBackToModels}
                   size="lg"
                   className="flex-1"
                   style={{
@@ -337,7 +331,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
                 </LiquidButton>
                 {job.status === 'completed' && (
                   <LiquidButton
-                    onClick={() => window.open(`https://huggingface.co/${job.config?.lora_model_repo}`, '_blank')}
+                    onClick={() => alert('Demo: Would open HuggingFace Hub')}
                     size="lg"
                     className="flex-1"
                     style={{

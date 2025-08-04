@@ -81,7 +81,7 @@ export default function Hero() {
           items={[
             { label: "Mistral Family Models", value: "model1" },
             { label: "Gemma Family Models", value: "model2" },
-            { label: "FLUX Image-Gen Models", value: "model3" },
+            
           ]}
           value={selectedModel}
           onChange={setSelectedModel}

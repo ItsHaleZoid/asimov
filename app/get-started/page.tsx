@@ -5,21 +5,71 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BsGoogle } from "react-icons/bs";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
-interface GetStartedPageProps {
-  className?: string;
-}
 
 export default function GetStartedPage() {
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"email" | "code" | "success">("email");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user && !authLoading) {
+      router.push('/');
+    }
+  }, [user, authLoading, router]);
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      setStep("code");
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            shouldCreateUser: true,
+          },
+        });
+        if (error) {
+          console.error('Error sending OTP:', error.message);
+          alert('Error sending code. Please try again.');
+        } else {
+          setStep("code");
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        alert('Unexpected error occurred. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) {
+        console.error('Error signing up with Google:', error.message);
+        alert('Error signing up with Google. Please try again.');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      alert('Unexpected error occurred. Please try again.');
+      setLoading(false);
     }
   };
 
@@ -47,10 +97,8 @@ export default function GetStartedPage() {
       if (index === 5 && value) {
         const isComplete = newCode.every(digit => digit.length === 1);
         if (isComplete) {
-          // Transition to success screen after animation
-          setTimeout(() => {
-            setStep("success");
-          }, 2000);
+          const otpCode = newCode.join('');
+          handleOtpSubmit(otpCode);
         }
       }
     }
@@ -62,10 +110,49 @@ export default function GetStartedPage() {
     }
   };
 
+  const handleOtpSubmit = async (otpCode: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email',
+      });
+      if (error) {
+        console.error('Error verifying OTP:', error.message);
+        alert('Invalid code. Please try again.');
+        setCode(["", "", "", "", "", ""]);
+        codeInputRefs.current[0]?.focus();
+      } else {
+        setStep("success");
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      alert('Unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBackClick = () => {
     setStep("email");
     setCode(["", "", "", "", "", ""]);
   };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+          <p className="text-white/70">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden">
@@ -102,9 +189,13 @@ export default function GetStartedPage() {
                     
                     <div className="space-y-4">
                       <BlurFade delay={0.2} inView>
-                        <button className="backdrop-blur-[2px] w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors">
+                        <button 
+                          onClick={handleGoogleSignUp}
+                          disabled={loading}
+                          className="backdrop-blur-[2px] w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                           <BsGoogle className="text-lg" />
-                          <span>Sign up with Google</span>
+                          <span>{loading ? 'Signing up...' : 'Sign up with Google'}</span>
                         </button>
                       </BlurFade>
                       
@@ -129,7 +220,8 @@ export default function GetStartedPage() {
                             />
                             <button 
                               type="submit"
-                              className="absolute right-1.5 top-1.5 text-white w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors group overflow-hidden"
+                              disabled={loading}
+                              className="absolute right-1.5 top-1.5 text-white w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors group overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <span className="relative w-full h-full block overflow-hidden">
                                 <span className="absolute inset-0 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-full">
@@ -213,13 +305,13 @@ export default function GetStartedPage() {
                         </button>
                         <button 
                           className={`flex-1 rounded-full font-medium py-3 border transition-all duration-300 ${
-                            code.every(d => d !== "") 
+                            code.every(d => d !== "") && !loading
                             ? "bg-white text-black border-transparent hover:bg-white/90 cursor-pointer" 
                             : "bg-[#111] text-white/50 border-white/10 cursor-not-allowed"
                           }`}
-                          disabled={!code.every(d => d !== "")}
+                          disabled={!code.every(d => d !== "") || loading}
                         >
-                          Continue
+                          {loading ? 'Verifying...' : 'Continue'}
                         </button>
                       </div>
                     </BlurFade>

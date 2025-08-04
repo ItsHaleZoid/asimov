@@ -14,18 +14,21 @@ export default function FineTunePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
+  const [selectedSubset, setSelectedSubset] = useState("");
   const [isStarting, setIsStarting] = useState(false);
+  const [filteredDatasets, setFilteredDatasets] = useState<any[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const handleDatasetSelect = (dataset: any) => {
     setSelectedDataset(dataset);
+    setSelectedSubset(dataset.subsets?.[0] || ""); // Auto-select first subset
     setSearchQuery("");
   };
 
   const handleFineTune = async () => {
-    if (!selectedModel || !selectedDataset) {
-      alert("Please select both a model and a dataset");
+    if (!selectedModel || !selectedDataset || !selectedSubset) {
+      alert("Please select model, dataset, and subset");
       return;
     }
 
@@ -44,6 +47,7 @@ export default function FineTunePage() {
           model_id: selectedModel,
           dataset_id: datasetId,
           dataset_name: selectedDataset.name,
+          dataset_subset: selectedSubset,
           model_name: getModelName(selectedModel)
         }),
       });
@@ -58,19 +62,14 @@ export default function FineTunePage() {
       
       if (data.job_id) {
         console.log('Redirecting to:', `/training/${data.job_id}`);
-        // Don't set isStarting to false here - let the redirect happen
         
-        // Try multiple redirect methods
-        setTimeout(() => {
-          console.log('Attempting router.push...');
+        // Immediate redirect - more reliable
+        try {
           router.push(`/training/${data.job_id}`);
-        }, 100);
-        
-        // Fallback after 2 seconds
-        setTimeout(() => {
-          console.log('Fallback redirect with window.location...');
+        } catch (routerError) {
+          console.warn('Router.push failed, using window.location:', routerError);
           window.location.href = `/training/${data.job_id}`;
-        }, 2000);
+        }
         
       } else {
         console.error('API response missing job_id:', data);
@@ -78,7 +77,19 @@ export default function FineTunePage() {
       }
     } catch (error) {
       console.error('Error starting training:', error);
-      alert('Failed to start training. Please make sure the API server is running.');
+      
+      // More specific error messages
+      let errorMessage = 'Failed to start training. ';
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (errorMsg.includes('fetch')) {
+        errorMessage += 'Could not connect to API server. Make sure it is running on port 8000.';
+      } else if (errorMsg.includes('job_id')) {
+        errorMessage += 'Server started the job but did not return a job ID.';
+      } else {
+        errorMessage += `Error: ${errorMsg}`;
+      }
+      
+      alert(errorMessage);
       setIsStarting(false);
     }
   };
@@ -108,7 +119,7 @@ export default function FineTunePage() {
 
   return (
     <div className="bg-black relative overflow-hidden h-250">
-      <StarsBackground className="absolute inset-0 z-0 opacity-50" />
+      <StarsBackground className="absolute inset-0 z-0 opacity-40" />
 
       <div className="absolute top-0 left-0 w-full h-full rotate-180 mt-20 transform skew-x-2 skew-y-1 scale-105">
         <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#ffae00] via-[#000000] to-transparent blur-3xl" 
@@ -134,18 +145,29 @@ export default function FineTunePage() {
             Select a model and search for datasets to begin fine-tuning
           </p>
           
-          <div className="flex flex-row items-center justify-center gap-2 relative w-full">
+          <div className="flex flex-row items-center justify-center gap-2 relative w-full z-10">
             <LiquidDropdown
               placeholder="Select a model"
               items={[
-                { label: "Mistral Instruct (7B)", value: "mistral-instruct-7b" },
-                { label: "Mistral Small (24B)", value: "mistral-small-24b" },
-                { label: "Mistral Codestral (22B)", value: "mistral-codestral-22b" },
-                { label: "Mistral Devstral Small (22B)", value: "mistral-devstral-22b" },
+                { label: "Mistral Instruct (7B)", value: "mistralai/Mistral-7B-Instruct-v0.3" },
+                { label: "Mistral Small Instruct (22B)", value: "mistralai/Mistral-Small-Instruct-2409" },
+                { label: "Mistral Codestral (22B)", value: "mistralai/Codestral-22B-v0.1" }, 
+                { label: "Mistral Large Instruct (123B)", value: "mistralai/Mistral-Large-Instruct-2407" },
               ]}
               value={selectedModel}
               onChange={setSelectedModel}
             />
+            {selectedDataset && selectedDataset.subsets && selectedDataset.subsets.length > 1 && (
+              <LiquidDropdown
+                placeholder="Dataset subset"
+                items={selectedDataset.subsets.map((subset: string) => ({
+                  label: subset.charAt(0).toUpperCase() + subset.slice(1),
+                  value: subset
+                }))}
+                value={selectedSubset}
+                onChange={setSelectedSubset}
+              />
+            )}
             <div className="relative flex-1 w-full">
               <LiquidInput
                 ref={inputRef}
@@ -154,6 +176,7 @@ export default function FineTunePage() {
                 className="w-full h-12"
                 onChange={(e) => setSearchQuery(e.target.value)}
                 icon={<SearchIcon className="w-4 h-4 ml-1" />}
+                recommendations={filteredDatasets.map(dataset => dataset.name)}
               />
               
               <div className="absolute top-full left-0 right-0 mt-2 z-50 max-h-96 overflow-y-auto">
@@ -162,6 +185,7 @@ export default function FineTunePage() {
                   modelFamily="mistral"
                   onDatasetSelect={handleDatasetSelect}
                   selectedDataset={selectedDataset}
+                  onFilteredDatasetsChange={setFilteredDatasets}
                 />
               </div>
             </div>
@@ -176,6 +200,9 @@ export default function FineTunePage() {
               <p className="text-white/60 text-sm">Selected Dataset:</p>
               <p className="text-white font-medium">{selectedDataset.name}</p>
               <p className="text-white/40 text-xs mt-1">{selectedDataset.description}</p>
+              {selectedSubset && (
+                <p className="text-white/60 text-xs mt-1">Subset: <span className="text-white/80">{selectedSubset}</span></p>
+              )}
             </div>
           )}
 
@@ -184,15 +211,15 @@ export default function FineTunePage() {
             className="mt-6 px-8 py-3"
             size="xl"
             onClick={handleFineTune}
-            disabled={!selectedModel || !selectedDataset || isStarting}
+            disabled={!selectedModel || !selectedDataset || !selectedSubset || isStarting}
             style={{
-              background: selectedModel && selectedDataset 
+              background: selectedModel && selectedDataset && selectedSubset 
                 ? "linear-gradient(135deg, #ff6f00 0%, #ffc400 100%)"
                 : "linear-gradient(135deg, #333 0%, #555 100%)",
-              color: selectedModel && selectedDataset ? "black" : "white",
-              opacity: selectedModel && selectedDataset && !isStarting ? 1 : 0.5,
-              cursor: selectedModel && selectedDataset && !isStarting ? "pointer" : "not-allowed",
-              border: selectedModel && selectedDataset ? "0 30px 100px 0 rgba(0, 0, 0, 0.8)" : "0 30px 100px 0 rgba(0, 0, 0, 0.8)",
+              color: selectedModel && selectedDataset && selectedSubset ? "black" : "white",
+              opacity: selectedModel && selectedDataset && selectedSubset && !isStarting ? 1 : 0.5,
+              cursor: selectedModel && selectedDataset && selectedSubset && !isStarting ? "pointer" : "not-allowed",
+              border: selectedModel && selectedDataset && selectedSubset ? "0 30px 100px 0 rgba(0, 0, 0, 0.8)" : "0 30px 100px 0 rgba(0, 0, 0, 0.8)",
             }}
           >
             {isStarting ? "Starting..." : "Start Fine-Tuning"}

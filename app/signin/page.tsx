@@ -4,6 +4,9 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
 interface SignInPageProps {
   className?: string;
@@ -14,11 +17,71 @@ export const SignInPage = ({ className }: SignInPageProps) => {
   const [step, setStep] = useState<"email" | "code" | "success">("email");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [accountError, setAccountError] = useState(false);
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user && !authLoading) {
+      router.push('/');
+    }
+  }, [user, authLoading, router]);
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      setStep("code");
+      setLoading(true);
+      setAccountError(false);
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            shouldCreateUser: false,
+          },
+        });
+        if (error) {
+          console.error('Error sending OTP:', error.message);
+          // Check if it's a user not found error
+          if (error.message.includes('Unable to validate email address') || 
+              error.message.includes('Invalid login credentials') ||
+              error.message.includes('Email not confirmed') ||
+              error.message.includes('User not found')) {
+            setAccountError(true);
+          } else {
+            alert('Error sending code. Please try again.');
+          }
+        } else {
+          setStep("code");
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        alert('Unexpected error occurred. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) {
+        console.error('Error signing in with Google:', error.message);
+        alert('Error signing in with Google. Please try again.');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      alert('Unexpected error occurred. Please try again.');
+      setLoading(false);
     }
   };
 
@@ -46,10 +109,8 @@ export const SignInPage = ({ className }: SignInPageProps) => {
       if (index === 5 && value) {
         const isComplete = newCode.every(digit => digit.length === 1);
         if (isComplete) {
-          // Transition to success screen after animation
-          setTimeout(() => {
-            setStep("success");
-          }, 2000);
+          const otpCode = newCode.join('');
+          handleOtpSubmit(otpCode);
         }
       }
     }
@@ -61,10 +122,49 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   };
 
+  const handleOtpSubmit = async (otpCode: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email',
+      });
+      if (error) {
+        console.error('Error verifying OTP:', error.message);
+        alert('Invalid code. Please try again.');
+        setCode(["", "", "", "", "", ""]);
+        codeInputRefs.current[0]?.focus();
+      } else {
+        setStep("success");
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      alert('Unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBackClick = () => {
     setStep("email");
     setCode(["", "", "", "", "", ""]);
   };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+          <p className="text-white/70">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden">
@@ -101,9 +201,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     
                     <div className="space-y-4">
                       <BlurFade delay={0.2} inView>
-                        <button className="backdrop-blur-[2px] w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors">
+                        <button 
+                          onClick={handleGoogleSignIn}
+                          disabled={loading}
+                          className="backdrop-blur-[2px] w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full py-3 px-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                           <span className="text-lg">G</span>
-                          <span>Sign in with Google</span>
+                          <span>{loading ? 'Signing in...' : 'Sign in with Google'}</span>
                         </button>
                       </BlurFade>
                       
@@ -122,13 +226,19 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                               type="email" 
                               placeholder="info@gmail.com"
                               value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="w-full backdrop-blur-[1px] text-white border-1 border-white/30 rounded-full py-3 px-4 focus:outline-none focus:border focus:border-white/30 text-center"
+                              onChange={(e) => {
+                                setEmail(e.target.value);
+                                setAccountError(false);
+                              }}
+                              className={`w-full backdrop-blur-[1px] text-white border-1 rounded-full py-3 px-4 focus:outline-none focus:border text-center ${
+                                accountError ? 'border-red-400/50 focus:border-red-400' : 'border-white/30 focus:border-white/30'
+                              }`}
                               required
                             />
                             <button 
                               type="submit"
-                              className="absolute right-1.5 top-1.5 text-white w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors group overflow-hidden"
+                              disabled={loading}
+                              className="absolute right-1.5 top-1.5 text-white w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors group overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <span className="relative w-full h-full block overflow-hidden">
                                 <span className="absolute inset-0 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-full">
@@ -141,6 +251,20 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                             </button>
                           </div>
                         </form>
+                        
+                        {accountError && (
+                          <div className="mt-4 p-3 bg-red-500/10 border border-red-400/20 rounded-lg">
+                            <p className="text-red-300 text-sm text-center">
+                              No account found with this email.
+                            </p>
+                            <p className="text-red-300/80 text-xs text-center mt-1">
+                              You need to create an account at{' '}
+                              <Link href="/get-started" className="underline hover:text-red-200 transition-colors">
+                                /get-started
+                              </Link>
+                            </p>
+                          </div>
+                        )}
                       </BlurFade>
                     </div>
                     
@@ -212,13 +336,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         </button>
                         <button 
                           className={`flex-1 rounded-full font-medium py-3 border transition-all duration-300 ${
-                            code.every(d => d !== "") 
+                            code.every(d => d !== "") && !loading
                             ? "bg-white text-black border-transparent hover:bg-white/90 cursor-pointer" 
                             : "bg-[#111] text-white/50 border-white/10 cursor-not-allowed"
                           }`}
-                          disabled={!code.every(d => d !== "")}
+                          disabled={!code.every(d => d !== "") || loading}
                         >
-                          Continue
+                          {loading ? 'Verifying...' : 'Continue'}
                         </button>
                       </div>
                     </BlurFade>

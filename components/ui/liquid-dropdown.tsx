@@ -68,6 +68,14 @@ export function LiquidDropdown({
   const dropdownRef = React.useRef<HTMLDivElement>(null)
 
   const selectedItem = items.find(item => item.value === selectedValue)
+  
+  // Calculate the width based on the longest item label
+  const longestLabel = React.useMemo(() => {
+    const allLabels = [...items.map(item => item.label), placeholder]
+    return allLabels.reduce((longest, current) => 
+      current.length > longest.length ? current : longest
+    )
+  }, [items, placeholder])
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -123,9 +131,10 @@ export function LiquidDropdown({
       {/* Dropdown Menu */}
       <div
         className={cn(
-          "absolute top-full mt-2 w-full min-w-[100px] origin-top transition-all duration-300",
+          "absolute top-full mt-2 origin-top transition-all duration-300",
           isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 -translate-y-2 pointer-events-none"
         )}
+        style={{ width: `${longestLabel.length * 0.65 + 3}rem`, minWidth: '8rem' }}
       >
         <div className="border border-border/20 bg-background/95 backdrop-blur-xl 
                         shadow-[0_8px_32px_rgba(0,0,0,0.12),0_0_48px_rgba(0,0,0,0.08),inset_0_0_0_1px_rgba(255,255,255,0.1)]
