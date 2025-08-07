@@ -66,16 +66,9 @@ export function LiquidDropdown({
   const [isOpen, setIsOpen] = React.useState(false)
   const [selectedValue, setSelectedValue] = React.useState(value)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
+  const buttonRef = React.useRef<HTMLButtonElement>(null)
 
   const selectedItem = items.find(item => item.value === selectedValue)
-  
-  // Calculate the width based on the longest item label
-  const longestLabel = React.useMemo(() => {
-    const allLabels = [...items.map(item => item.label), placeholder]
-    return allLabels.reduce((longest, current) => 
-      current.length > longest.length ? current : longest
-    )
-  }, [items, placeholder])
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -99,6 +92,7 @@ export function LiquidDropdown({
     <div ref={dropdownRef} className="relative inline-block">
       {/* Trigger Button */}
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "relative group",
@@ -131,12 +125,12 @@ export function LiquidDropdown({
       {/* Dropdown Menu */}
       <div
         className={cn(
-          "absolute top-full mt-2 origin-top transition-all duration-300",
+          "absolute top-full mt-2 left-0 origin-top transition-all duration-300",
           isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 -translate-y-2 pointer-events-none"
         )}
-        style={{ width: `${longestLabel.length * 0.65 + 3}rem`, minWidth: '8rem' }}
+        style={{ width: buttonRef.current?.offsetWidth || 'auto' }}
       >
-        <div className="border border-border/20 bg-background/95 backdrop-blur-xl 
+        <div className="border border-border/20 bg-background/100 w-full
                         shadow-[0_8px_32px_rgba(0,0,0,0.12),0_0_48px_rgba(0,0,0,0.08),inset_0_0_0_1px_rgba(255,255,255,0.1)]
                         dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),0_0_48px_rgba(0,0,0,0.2),inset_0_0_0_1px_rgba(255,255,255,0.05)]">
           <ul className="py-1" role="listbox">

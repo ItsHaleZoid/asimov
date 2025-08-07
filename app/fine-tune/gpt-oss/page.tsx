@@ -171,11 +171,11 @@ export default function FineTunePage() {
         
        
       <div className="absolute top-0 left-0 w-full h-full rotate-180 mt-20 transform skew-x-2 skew-y-1 scale-105">
-        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#1702ff] via-[#000000] to-transparent blur-3xl" 
+        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#8dffaa] via-[#000000] to-transparent blur-3xl" 
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
-        <div className="absolute -top-100 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#009dff] via-amber-50/4 to-transparent blur-[80px] rounded-full"
+        <div className="absolute -top-100 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#ade0ff] via-amber-50/4 to-transparent blur-[80px] rounded-full"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%", mixBlendMode: "screen"}}></div>
-        <div className="absolute -top-50 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#0800ff] via-transparent to-transparent blur-[500px] rounded-full -z-10"
+        <div className="absolute -top-50 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#09ff04] via-transparent to-transparent blur-[500px] rounded-full -z-10"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
       </div>
       
@@ -184,16 +184,16 @@ export default function FineTunePage() {
       <div className="flex flex-col items-center justify-center min-h-screen relative z-10">
         <div className="flex flex-col items-center justify-center mt-40">
             <BlurFade delay={0} className="-mb-12">
-            <h1 className={`${readexPro.className} font-light text-5xl px-4 py-2 rounded-full bg-gradient-to-r from-[#ffffff] to-[#7fd9ff] bg-clip-text text-transparent -mb-4 -mt-25 z-20`}
+            <h1 className={`${readexPro.className} font-light text-5xl px-4 py-2 rounded-full bg-gradient-to-r from-[#ffffff] to-[#c8ffd6] bg-clip-text text-transparent -mb-4 -mt-25 z-20`}
                 
             >
-              Fine-Tune Gemma Family Models
+              Fine-Tune GPT-OSS Models
             </h1>
             </BlurFade>
             <BlurFade delay={0.1} className="-mb-12">
-          <div className="flex flex-row items-center justify-center relative w-full z-10 gap-3">
-            <p className="text-xl mt-4">By</p>
-            <Image src="/google.png" alt="Google" width={100} height={20} className="brightness-0 invert  mt-6" />
+          <div className="flex flex-row items-center justify-center relative w-full z-10 gap-4">
+            <p className="text-xl mt-6">By</p>
+            <Image src="/openai.png" alt="OpenAI" width={100} height={20} className="brightness-0 invert  mt-6" />
           </div>
           </BlurFade>
         </div>
@@ -210,11 +210,8 @@ export default function FineTunePage() {
               
               placeholder="Select a model"
               items={[
-                { label: "Gemma 3 Instruct (1B)", value: "google/gemma-3-1b-it" },
-                { label: "Gemma 3 Instruct (4B)", value: "google/gemma-3-4b-it" },
-                { label: "Gemma 3 Instruct (12B)", value: "google/gemma-3-12b-it" },
-                { label: "Gemma 3 Instruct (27B)", value: "google/gemma-3-27b-it" },
-                { label: "GPT 2", value: "gpt2" },
+                { label: "gpt-oss (20B)", value: "openai/gpt-oss-20b" },
+                { label: "gpt-oss (120B)", value: "openai/gpt-oss-120b" },
               ]}
               value={selectedModel}
               onChange={setSelectedModel}
@@ -279,8 +276,8 @@ export default function FineTunePage() {
             disabled={!selectedModel || !selectedDataset || !selectedSubset || isStarting}
             style={{
               background: selectedModel && selectedDataset && selectedSubset 
-                ? "linear-gradient(135deg, #006aff 0%, #00e1ff 100%)"
-                : "linear-gradient(135deg, #333 0%, #555 100%)",
+                ? "linear-gradient(0deg, rgb(13, 100, 1) 0%, #09ff04 100%)"
+                : "linear-gradient(0, #333 0%, #555 100%)",
               color: selectedModel && selectedDataset && selectedSubset ? "black" : "white",
               opacity: selectedModel && selectedDataset && selectedSubset && !isStarting ? 1 : 0.5,
               cursor: selectedModel && selectedDataset && selectedSubset && !isStarting ? "pointer" : "not-allowed",

@@ -89,7 +89,7 @@ export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect
 
   return (
     <div className="w-full">
-      <div className="bg-black/30 backdrop-blur-xl rounded-lg border border-white/10 overflow-hidden">
+      <div className="bg-black/80 backdrop-blur-xl rounded-lg border border-white/10 overflow-hidden">
         {filteredDatasets.length > 0 ? (
           <div className="max-h-80 overflow-y-auto custom-scrollbar">
             <style jsx>{`

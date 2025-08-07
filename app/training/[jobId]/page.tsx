@@ -16,16 +16,21 @@ export default function TrainingPage() {
 
   useEffect(() => {
     // Fetch initial job status
-    fetch(`http://localhost:8000/api/job/${jobId}`)
-      .then(res => {
+    const fetchInitialJob = async () => {
+      try {
+        const { getAuthHeaders } = await import('@/lib/utils');
+        const headers = await getAuthHeaders();
+        const res = await fetch(`http://localhost:8000/api/job/${jobId}`, { headers });
         if (!res.ok) throw new Error('Job not found');
-        return res.json();
-      })
-      .then(data => setJob(data))
-      .catch(err => {
+        const data = await res.json();
+        setJob(data);
+      } catch (err) {
         console.error('Error fetching job:', err);
         setError('Failed to load training job');
-      });
+      }
+    };
+    
+    fetchInitialJob();
 
     // Connect WebSocket for real-time updates
     const websocket = new WebSocket(`ws://localhost:8000/ws/${jobId}`);
@@ -125,7 +130,9 @@ export default function TrainingPage() {
     const pollJobStatus = async () => {
       try {
         console.log('🔄 Polling job status...');
-        const response = await fetch(`http://localhost:8000/api/job/${jobId}`);
+        const { getAuthHeaders } = await import('@/lib/utils');
+        const headers = await getAuthHeaders();
+        const response = await fetch(`http://localhost:8000/api/job/${jobId}`, { headers });
         if (response.ok) {
           const data = await response.json();
           console.log('📡 Polling received job data:', data);
@@ -155,8 +162,11 @@ export default function TrainingPage() {
     if (!confirm('Are you sure you want to cancel this training job?')) return;
     
     try {
+      const { getAuthHeaders } = await import('@/lib/utils');
+      const headers = await getAuthHeaders();
       const response = await fetch(`http://localhost:8000/api/job/${jobId}/cancel`, {
         method: 'POST',
+        headers
       });
       
       if (response.ok) {
@@ -175,7 +185,7 @@ export default function TrainingPage() {
   };
 
   return (
-    <div className="bg-black min-h-screen relative overflow-hidden">
+    <div className="bg-black min-h-screen relative ">
      
       <Header />
       

@@ -9,10 +9,13 @@ import { Space_Grotesk } from 'next/font/google';
 import { BlurFade } from './ui/blur-fade';
 import { useRouter } from 'next/navigation';
 
+
 const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
 });
+
+
 
 export default function Hero() {
   const [scrollY, setScrollY] = useState(0);
@@ -27,14 +30,14 @@ export default function Hero() {
 
   const handleFineTuneClick = () => {
     switch (selectedModel) {
-      case "model1":
+      case "mistral-family":
         router.push('/fine-tune/mistral-family');
         break;
-      case "model2":
+      case "gemma-family":
         router.push('/fine-tune/gemma-family');
         break;
-      case "model3":
-        router.push('/fine-tune/flux-family');
+      case "gpt-oss":
+        router.push('/fine-tune/gpt-oss');
         break;
       default:
         break;
@@ -76,11 +79,12 @@ export default function Hero() {
           className={`${spaceGrotesk.className} font-medium transition-all duration-200 hover:shadow-lg text-xs`}
           size="xl"
          
-          rounded="full"
+          rounded="default"
           variant="destructive"
           items={[
-            { label: "Mistral Family Models", value: "model1" },
-            { label: "Gemma Family Models", value: "model2" },
+            { label: "Mistral Family Models", value: "mistral-family" },
+            { label: "Gemma Family Models", value: "gemma-family" },
+            { label: "GPT-OSS Models", value: "gpt-oss" },
             
           ]}
           value={selectedModel}

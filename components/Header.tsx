@@ -31,6 +31,38 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// Navigation links component
+function NavLinks() {
+  const { user } = useAuth();
+  const router = useRouter();
+  
+
+  
+  // Unauthenticated navigation
+  return (
+    <nav className="hidden md:flex items-center justify-center space-x-8 ml-21">
+      <a 
+        href="#" 
+        className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
+      >
+        Models
+      </a>
+      <a 
+        href="/pricing" 
+        className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
+      >
+        Pricing
+      </a>
+      <a 
+        href="#" 
+        className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
+      >
+        How to use it
+      </a>
+    </nav>
+  );
+}
+
 // Profile dropdown component
 function ProfileDropdown({ user }: { user: any }) {
   const router = useRouter();
@@ -41,7 +73,7 @@ function ProfileDropdown({ user }: { user: any }) {
     <div className="relative mr-5">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 p-1 rounded-full bg-white/5 hover:bg-white/10 transition-colors px-4"
+        className="flex items-center gap-3 p-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors px-4"
       >
         <img
           src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '/default-avatar.png'}
@@ -62,7 +94,7 @@ function ProfileDropdown({ user }: { user: any }) {
       </button>
       
       {isOpen && (
-        <div className="absolute mt-2 w-48 bg-black/90 backdrop-blur-md border border-white/20 rounded-lg shadow-lg z-50 justify-center items-center">
+        <div className="absolute mt-2 -ml-4 w-48 bg-black backdrop-blur-md border border-white/20 rounded-lg shadow-lg z-50 justify-center items-center">
           <div className="p-3 border-b border-white/10">
             <p className={`${gabarito.className} text-white text-sm font-medium`}>
               {user?.user_metadata?.full_name || user?.user_metadata?.name || 'User'}
@@ -149,26 +181,7 @@ export default function Header({ className }: HeaderProps) {
       
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center justify-center space-x-8 ml-21">
-          <a 
-            href="#" 
-            className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
-          >
-            Models
-          </a>
-          <a 
-            href="#" 
-            className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
-          >
-            Pricing
-          </a>
-          <a 
-            href="#" 
-            className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
-          >
-            How to use it
-          </a>
-        </nav>
+        <NavLinks />
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-4">

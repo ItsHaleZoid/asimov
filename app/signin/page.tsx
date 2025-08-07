@@ -14,11 +14,12 @@ interface SignInPageProps {
 
 export const SignInPage = ({ className }: SignInPageProps) => {
   const [email, setEmail] = useState("");
-  const [step, setStep] = useState<"email" | "code" | "success">("email");
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const codeInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [password, setPassword] = useState("");
+
+  const [authMode, setAuthMode] = useState<"signin" | "otp">("signin");
+  const [step, setStep] = useState<"auth" | "success">("auth");
   const [loading, setLoading] = useState(false);
-  const [accountError, setAccountError] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
@@ -29,38 +30,58 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   }, [user, authLoading, router]);
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setLoading(true);
-      setAccountError(false);
-      try {
+    if (!email) return;
+    
+    setLoading(true);
+    setError("");
+    
+    try {
+      if (authMode === "signin") {
+        // Email/Password Sign In
+        if (!password) {
+          setError("Password is required");
+          setLoading(false);
+          return;
+        }
+        
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (error) {
+          console.error('Sign in error:', error.message);
+          setError(error.message);
+        } else {
+          setStep("success");
+          setTimeout(() => router.push('/'), 2000);
+        }
+
+      } else if (authMode === "otp") {
+        // Email Link Sign In
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
             shouldCreateUser: false,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         });
+        
         if (error) {
-          console.error('Error sending OTP:', error.message);
-          // Check if it's a user not found error
-          if (error.message.includes('Unable to validate email address') || 
-              error.message.includes('Invalid login credentials') ||
-              error.message.includes('Email not confirmed') ||
-              error.message.includes('User not found')) {
-            setAccountError(true);
-          } else {
-            alert('Error sending code. Please try again.');
-          }
+          console.error('Error sending email link:', error.message);
+          setError(error.message);
         } else {
-          setStep("code");
+          setStep("success");
+          setError("");
         }
-      } catch (error) {
-        console.error('Unexpected error:', error);
-        alert('Unexpected error occurred. Please try again.');
-      } finally {
-        setLoading(false);
       }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,74 +106,23 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   };
 
-  // Focus first input when code screen appears
-  useEffect(() => {
-    if (step === "code") {
-      setTimeout(() => {
-        codeInputRefs.current[0]?.focus();
-      }, 500);
-    }
-  }, [step]);
-
-  const handleCodeChange = (index: number, value: string) => {
-    if (value.length <= 1) {
-      const newCode = [...code];
-      newCode[index] = value;
-      setCode(newCode);
-      
-      // Focus next input if value is entered
-      if (value && index < 5) {
-        codeInputRefs.current[index + 1]?.focus();
-      }
-      
-      // Check if code is complete
-      if (index === 5 && value) {
-        const isComplete = newCode.every(digit => digit.length === 1);
-        if (isComplete) {
-          const otpCode = newCode.join('');
-          handleOtpSubmit(otpCode);
-        }
-      }
-    }
+  // Reset form when switching auth modes
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setError("");
+    setStep("auth");
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      codeInputRefs.current[index - 1]?.focus();
-    }
+  // Handle auth mode changes
+  const switchAuthMode = (mode: "signin" | "otp") => {
+    setAuthMode(mode);
+    resetForm();
   };
 
-  const handleOtpSubmit = async (otpCode: string) => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: 'email',
-      });
-      if (error) {
-        console.error('Error verifying OTP:', error.message);
-        alert('Invalid code. Please try again.');
-        setCode(["", "", "", "", "", ""]);
-        codeInputRefs.current[0]?.focus();
-      } else {
-        setStep("success");
-        setTimeout(() => {
-          router.push('/');
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      alert('Unexpected error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleBackClick = () => {
-    setStep("email");
-    setCode(["", "", "", "", "", ""]);
-  };
+
+
 
   // Show loading while checking auth
   if (authLoading) {
@@ -189,15 +159,21 @@ export const SignInPage = ({ className }: SignInPageProps) => {
             {/* Left side (form) */}
             <div className="flex-1 flex flex-col justify-center items-center">
               <div className="">
-                {step === "email" ? (
+                {step === "auth" ? (
                   <div className="space-y-6 text-center">
                     <BlurFade delay={0.1} inView>
-                      <div className="space-y-1 ">
-                        <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">Welcome to AsimovAI</h1>
-                        <p className="text-[1.2rem] text-white/70 font-light">Sign in to your account</p>
+                      <div className="space-y-1">
+                        <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">
+                          Welcome to AsimovAI
+                        </h1>
+                        <p className="text-[1.2rem] text-white/70 font-light">
+                          {authMode === "signin" ? "Sign in to your account" : 
+                           "Get a sign-in link via email"}
+                        </p>
                       </div>
                     </BlurFade>
-                    
+
+
                     
                     <div className="space-y-4">
                       <BlurFade delay={0.2} inView>
@@ -220,147 +196,123 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                       </BlurFade>
                       
                       <BlurFade delay={0.4} inView>
-                        <form onSubmit={handleEmailSubmit}>
-                          <div className="relative">
+                        <form onSubmit={handleAuthSubmit} className="space-y-3">
+                          <input 
+                            type="email" 
+                            placeholder="info@gmail.com"
+                            value={email}
+                            onChange={(e) => {
+                              setEmail(e.target.value);
+                              setError("");
+                            }}
+                            className="w-full backdrop-blur-[1px] text-white border border-white/30 rounded-full py-3 px-4 focus:outline-none focus:border-white/50 text-center"
+                            required
+                            disabled={loading}
+                          />
+                          
+                          {/* Only show password field when not in OTP mode */}
+                          {authMode !== "otp" && (
                             <input 
-                              type="email" 
-                              placeholder="info@gmail.com"
-                              value={email}
+                              type="password" 
+                              placeholder="Password"
+                              value={password}
                               onChange={(e) => {
-                                setEmail(e.target.value);
-                                setAccountError(false);
+                                setPassword(e.target.value);
+                                setError("");
                               }}
-                              className={`w-full backdrop-blur-[1px] text-white border-1 rounded-full py-3 px-4 focus:outline-none focus:border text-center ${
-                                accountError ? 'border-red-400/50 focus:border-red-400' : 'border-white/30 focus:border-white/30'
-                              }`}
+                              className="w-full backdrop-blur-[1px] text-white border border-white/30 rounded-full py-3 px-4 focus:outline-none focus:border-white/50 text-center"
                               required
-                            />
-                            <button 
-                              type="submit"
                               disabled={loading}
-                              className="absolute right-1.5 top-1.5 text-white w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors group overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <span className="relative w-full h-full block overflow-hidden">
-                                <span className="absolute inset-0 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-full">
-                                  →
-                                </span>
-                                <span className="absolute inset-0 flex items-center justify-center transition-transform duration-300 -translate-x-full group-hover:translate-x-0">
-                                  →
-                                </span>
-                              </span>
-                            </button>
-                          </div>
+                            />
+                          )}
+                          
+                          <button 
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-white text-black font-medium py-3 px-4 rounded-full hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {loading ? 'Processing...' : 
+                             authMode === "signin" ? "Sign In" : "Send Link"}
+                          </button>
                         </form>
                         
-                        {accountError && (
-                          <div className="mt-4 p-3 bg-red-500/10 border border-red-400/20 rounded-lg">
-                            <p className="text-red-300 text-sm text-center">
-                              No account found with this email.
-                            </p>
-                            <p className="text-red-300/80 text-xs text-center mt-1">
-                              You need to create an account at{' '}
-                              <Link href="/get-started" className="underline hover:text-red-200 transition-colors">
-                                /get-started
-                              </Link>
+                        {error && (
+                          <div className={`mt-4 p-3 rounded-lg ${
+                            error.includes('confirmation email sent') 
+                              ? 'bg-green-500/10 border border-green-400/20' 
+                              : 'bg-red-500/10 border border-red-400/20'
+                          }`}>
+                            <p className={`text-sm text-center ${
+                              error.includes('confirmation email sent') 
+                                ? 'text-green-300' 
+                                : 'text-red-300'
+                            }`}>
+                              {error}
                             </p>
                           </div>
                         )}
+                        
+                        {/* OTP Option - only show when not in OTP mode */}
+                        {authMode !== "otp" && (
+                          <div className="mt-4">
+                            <button
+                              type="button"
+                              onClick={() => switchAuthMode("otp")}
+                              className="text-white/60 hover:text-white/80 text-sm underline transition-colors"
+                            >
+                              Sign in with email link instead
+                            </button>
+                          </div>
+                        )}
+                        
+                        {/* Back to password option when in OTP mode */}
+                        {authMode === "otp" && (
+                          <div className="mt-4">
+                            <button
+                              type="button"
+                              onClick={() => switchAuthMode("signin")}
+                              className="text-white/60 hover:text-white/80 text-sm underline transition-colors"
+                            >
+                              Sign in with password instead
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Link to sign up */}
+                        <div className="mt-6 text-center">
+                          <p className="text-white/60 text-sm">
+                            Don't have an account?{' '}
+                            <Link href="/get-started" className="text-white underline hover:text-white/80 transition-colors">
+                              Sign up here
+                            </Link>
+                          </p>
+                        </div>
                       </BlurFade>
                     </div>
                     
                     <BlurFade delay={0.5} inView>
-                      <p className="text-xs text-white/80 pt-10">
-                        By signing up, you agree to the <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">Terms of Service</Link>, <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">Privacy Policy</Link>.
+                                              <p className="text-xs text-white/80 pt-10">
+                        By signing in, you agree to the{' '}
+                        <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">
+                          Terms of Service
+                        </Link>{', '}
+                        <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">
+                          Privacy Policy
+                        </Link>.
                       </p>
                     </BlurFade>
                   </div>
-                ) : step === "code" ? (
-                  <div className="space-y-6 text-center">
-                    <BlurFade delay={0.1} inView>
-                      <div className="space-y-1">
-                        <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">We sent you a code</h1>
-                        <p className="text-[1.25rem] text-white/50 font-light">Please enter it</p>
-                      </div>
-                    </BlurFade>
-                    
-                    <BlurFade delay={0.2} inView>
-                      <div className="w-full">
-                        <div className="relative rounded-full py-4 px-5 border border-white/10 bg-transparent">
-                          <div className="flex items-center justify-center">
-                            {code.map((digit, i) => (
-                              <div key={i} className="flex items-center">
-                                <div className="relative">
-                                  <input
-                                    ref={(el) => {
-                                      codeInputRefs.current[i] = el;
-                                    }}
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*"
-                                    maxLength={1}
-                                    value={digit}
-                                    onChange={e => handleCodeChange(i, e.target.value)}
-                                    onKeyDown={e => handleKeyDown(i, e)}
-                                    className="w-8 text-center text-xl bg-transparent text-white border-none focus:outline-none focus:ring-0 appearance-none"
-                                    style={{ caretColor: 'transparent' }}
-                                  />
-                                  {!digit && (
-                                    <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center pointer-events-none">
-                                      <span className="text-xl text-white">0</span>
-                                    </div>
-                                  )}
-                                </div>
-                                {i < 5 && <span className="text-white/20 text-xl">|</span>}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </BlurFade>
-                    
-                    <BlurFade delay={0.3} inView>
-                      <div>
-                        <p className="text-white/50 hover:text-white/70 transition-colors cursor-pointer text-sm">
-                          Resend code
-                        </p>
-                      </div>
-                    </BlurFade>
-                    
-                    <BlurFade delay={0.4} inView>
-                      <div className="flex w-full gap-3">
-                        <button 
-                          onClick={handleBackClick}
-                          className="rounded-full bg-white text-black font-medium px-8 py-3 hover:bg-white/90 transition-colors w-[30%]"
-                        >
-                          Back
-                        </button>
-                        <button 
-                          className={`flex-1 rounded-full font-medium py-3 border transition-all duration-300 ${
-                            code.every(d => d !== "") && !loading
-                            ? "bg-white text-black border-transparent hover:bg-white/90 cursor-pointer" 
-                            : "bg-[#111] text-white/50 border-white/10 cursor-not-allowed"
-                          }`}
-                          disabled={!code.every(d => d !== "") || loading}
-                        >
-                          {loading ? 'Verifying...' : 'Continue'}
-                        </button>
-                      </div>
-                    </BlurFade>
-                    
-                    <BlurFade delay={0.5} inView>
-                      <div className="pt-16">
-                        <p className="text-xs text-white/40">
-                          By signing up, you agree to the <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">MSA</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Product Terms</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Policies</Link>, <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Privacy Notice</Link>, and <Link href="#" className="underline text-white/40 hover:text-white/60 transition-colors">Cookie Notice</Link>.
-                        </p>
-                      </div>
-                    </BlurFade>
-                  </div>
+
                 ) : (
                   <div className="space-y-6 text-center">
                     <BlurFade delay={0.1} inView>
                       <div className="space-y-1">
-                        <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">You're in!</h1>
-                        <p className="text-[1.25rem] text-white/50 font-light">Welcome</p>
+                        <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">
+                          {authMode === "otp" ? "Check Your Email!" : "You're in!"}
+                        </h1>
+                        <p className="text-[1.25rem] text-white/50 font-light">
+                          {authMode === "otp" ? "We sent you a sign-in link" : "Welcome back"}
+                        </p>
                       </div>
                     </BlurFade>
                     
@@ -375,9 +327,26 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     </BlurFade>
                     
                     <BlurFade delay={0.3} inView>
-                      <button className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors">
-                        Continue to Dashboard
-                      </button>
+                      {authMode === "otp" ? (
+                        <div className="space-y-3">
+                          <p className="text-white/60 text-sm">
+                            Click the link in your email to complete sign-in
+                          </p>
+                          <button 
+                            onClick={() => setStep("auth")}
+                            className="w-full rounded-full bg-white/10 text-white font-medium py-3 hover:bg-white/20 transition-colors"
+                          >
+                            Back to Sign In
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => router.push('/')}
+                          className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors"
+                        >
+                          Continue to Dashboard
+                        </button>
+                      )}
                     </BlurFade>
                   </div>
                 )}

@@ -9,8 +9,18 @@ import { SearchIcon } from "lucide-react";
 import { StarsBackground } from '@/components/ui/stars';
 import DatasetsList from '@/components/ui/datasets-list';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
+import { useAuth } from '@/lib/auth-context';
+import { supabase } from '@/lib/supabase';
+import { Readex_Pro } from 'next/font/google';
+import { BlurFade } from "@/components/ui/blur-fade";
+
+const readexPro = Readex_Pro({
+  subsets: ['latin'],
+  weight: ['200', '300', '400', '500', '600', '700'],
+});
 
 export default function FineTunePage() {
+  const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedDataset, setSelectedDataset] = useState<any>(null);
@@ -19,6 +29,13 @@ export default function FineTunePage() {
   const [filteredDatasets, setFilteredDatasets] = useState<any[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!user && !authLoading) {
+      router.push('/signin');
+    }
+  }, [user, authLoading, router]);
 
   const handleDatasetSelect = (dataset: any) => {
     setSelectedDataset(dataset);
@@ -32,9 +49,21 @@ export default function FineTunePage() {
       return;
     }
 
+    if (!user) {
+      alert("Please sign in to start training");
+      router.push('/signin');
+      return;
+    }
+
     setIsStarting(true);
 
     try {
+      // Get authentication headers
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication token found. Please sign in again.');
+      }
+
       // Extract dataset ID from HuggingFace link
       const datasetId = selectedDataset.hf_link.split('/').slice(-2).join('/');
       
@@ -42,13 +71,14 @@ export default function FineTunePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           model_id: selectedModel,
           dataset_id: datasetId,
           dataset_name: selectedDataset.name,
           dataset_subset: selectedSubset,
-          model_name: getModelName(selectedModel)
+          model_name: (selectedModel)
         }),
       });
 
@@ -94,15 +124,7 @@ export default function FineTunePage() {
     }
   };
 
-  const getModelName = (modelValue: string) => {
-    const models: { [key: string]: string } = {
-      "mistral-instruct-7b": "Mistral Instruct (7B)",
-      "mistral-small-24b": "Mistral Small (24B)",
-      "mistral-codestral-22b": "Mistral Codestral (22B)",
-      "mistral-devstral-22b": "Mistral Devstral Small (22B)",
-    };
-    return models[modelValue] || modelValue;
-  };
+  
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -117,12 +139,29 @@ export default function FineTunePage() {
     };
   }, []);
 
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+          <p className="text-white/70">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if user is not authenticated
+  if (!user) {
+    return null;
+  }
+
   return (
-    <div className="bg-black relative overflow-hidden h-250">
-      <StarsBackground className="absolute inset-0 z-0 opacity-40" />
+    <div className={`${readexPro.className} bg-black relative overflow-hidden h-250`}>
+      
 
       <div className="absolute top-0 left-0 w-full h-full rotate-180 mt-20 transform skew-x-2 skew-y-1 scale-105">
-        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#ffae00] via-[#000000] to-transparent blur-3xl" 
+        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#ff9500] via-[#000000] to-transparent blur-3xl" 
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
         <div className="absolute -top-100 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#ffc400] via-amber-50/4 to-transparent blur-[80px] rounded-full"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%", mixBlendMode: "screen"}}></div>
@@ -133,25 +172,33 @@ export default function FineTunePage() {
       <Header />
     
       <div className="flex flex-col items-center justify-center min-h-screen relative z-10">
-        <div className="flex flex-col items-center justify-center mt-20">
-          <h1 className="text-5xl font-light px-4 py-2 rounded-full bg-gradient-to-r from-[#ffc400] to-[#ff6f00] bg-clip-text text-transparent -mb-4 -mt-25 z-20">
-            Fine-Tune Mistral Family Models
-          </h1>
+        <div className="flex flex-col items-center justify-center mt-40">
+          <BlurFade delay={0} className="-mb-12">
+            <h1 className="text-5xl font-light px-4 py-2 rounded-full bg-gradient-to-r from-[rgb(255,244,206)] to-[#ffae70] bg-clip-text text-transparent -mb-4 -mt-25 z-20">
+              Fine-Tune Mistral Family Models
+            </h1>
+          </BlurFade>
+          <BlurFade delay={0.1} className="-mb-12">
+          <div className="flex flex-row items-center justify-center relative w-full z-10">
+            <p className="text-xl -mt-2 -mr-2">By</p>
           <Image src="/mistral-wordmark-logo.png" alt="Mistral" width={180} height={20} className="brightness-0 invert opacity-80" />
+          </div>
+          </BlurFade>
         </div>
         
         <div className="flex flex-col items-center justify-center gap-4 mt-25 relative">
+        <BlurFade delay={0.2} >
           <p className="text-white text-2xl font-light opacity-80 mb-2">
             Select a model and search for datasets to begin fine-tuning
           </p>
-          
+          </BlurFade>
+          <BlurFade delay={0.3} className="w-full z-10">
           <div className="flex flex-row items-center justify-center gap-2 relative w-full z-10">
             <LiquidDropdown
               placeholder="Select a model"
               items={[
                 { label: "Mistral Instruct (7B)", value: "mistralai/Mistral-7B-Instruct-v0.3" },
-                { label: "Mistral Small Instruct (22B)", value: "mistralai/Mistral-Small-Instruct-2409" },
-                { label: "Mistral Codestral (22B)", value: "mistralai/Codestral-22B-v0.1" }, 
+                { label: "Mistral Small Instruct (24B)", value: "mistralai/Mistral-Small-Instruct-2409" },
                 { label: "Mistral Large Instruct (123B)", value: "mistralai/Mistral-Large-Instruct-2407" },
               ]}
               value={selectedModel}
@@ -205,8 +252,10 @@ export default function FineTunePage() {
               )}
             </div>
           )}
+          </BlurFade>
 
           {/* Fine Tune Button */}
+          <BlurFade delay={0.4}>
           <LiquidButton
             className="mt-6 px-8 py-3"
             size="xl"
@@ -224,6 +273,7 @@ export default function FineTunePage() {
           >
             {isStarting ? "Starting..." : "Start Fine-Tuning"}
           </LiquidButton>
+          </BlurFade>
         </div>
       </div>
     </div>

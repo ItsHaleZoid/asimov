@@ -36,7 +36,9 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
     if (enablePolling) {
       const fetchJobStatus = async () => {
         try {
-          const response = await fetch(`http://localhost:8000/api/job/${job.id}`);
+          const { getAuthHeaders } = await import('@/lib/utils');
+          const headers = await getAuthHeaders();
+          const response = await fetch(`http://localhost:8000/api/job/${job.id}`, { headers });
           if (response.ok) {
             const updatedJob = await response.json();
             if (onJobUpdate) {
@@ -138,7 +140,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
   const isFinished = ['completed', 'failed', 'cancelled'].includes(job.status);
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto mt-20">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-5xl font-light text-white mb-4">

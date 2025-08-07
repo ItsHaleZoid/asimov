@@ -1,62 +1,88 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 export default function AuthCallback() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // Check for error in URL params first
+        const errorParam = searchParams.get('error');
+        const errorDescription = searchParams.get('error_description');
+        
+        if (errorParam) {
+          console.error('Auth error from URL:', errorParam, errorDescription);
+          setError(errorDescription || errorParam);
+          setTimeout(() => router.push('/auth/auth-code-error'), 2000);
+          return;
+        }
+
+        // Handle the auth callback
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Auth callback error:', error);
-          router.push('/auth/auth-code-error');
+          setError(error.message);
+          setTimeout(() => router.push('/auth/auth-code-error'), 2000);
           return;
         }
 
         if (data.session) {
           // Successfully authenticated
+          console.log('Authentication successful, redirecting to home...');
           router.push('/');
         } else {
-          // No session found, try to handle the URL hash
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
-
-          if (accessToken && refreshToken) {
-            const { error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-
-            if (sessionError) {
-              console.error('Session error:', sessionError);
-              router.push('/auth/auth-code-error');
-            } else {
-              router.push('/');
-            }
+          // Try to exchange code for session
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.search);
+          
+          if (exchangeError) {
+            console.error('Code exchange error:', exchangeError);
+            setError(exchangeError.message);
+            setTimeout(() => router.push('/auth/auth-code-error'), 2000);
           } else {
-            router.push('/auth/auth-code-error');
+            // Check session again after exchange
+            const { data: newSession } = await supabase.auth.getSession();
+            if (newSession.session) {
+              console.log('Authentication successful after code exchange, redirecting...');
+              router.push('/');
+            } else {
+              console.error('No session found after code exchange');
+              setError('Failed to establish session');
+              setTimeout(() => router.push('/auth/auth-code-error'), 2000);
+            }
           }
         }
       } catch (error) {
         console.error('Unexpected error:', error);
-        router.push('/auth/auth-code-error');
+        setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+        setTimeout(() => router.push('/auth/auth-code-error'), 2000);
       }
     };
 
     handleAuthCallback();
-  }, [router]);
+  }, [router, searchParams]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-black">
       <div className="text-center space-y-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
-        <p className="text-white/70">Completing sign in...</p>
+        {error ? (
+          <>
+            <div className="text-red-400 text-xl font-semibold">Authentication Error</div>
+            <p className="text-white/70 max-w-md">{error}</p>
+            <p className="text-white/50 text-sm">Redirecting to error page...</p>
+          </>
+        ) : (
+          <>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+            <p className="text-white/70">Completing sign in...</p>
+          </>
+        )}
       </div>
     </div>
   );
