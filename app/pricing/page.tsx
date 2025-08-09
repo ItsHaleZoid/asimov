@@ -2,9 +2,9 @@
 
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
-import { Gabarito, Readex_Pro} from "next/font/google";
+import { Readex_Pro } from "next/font/google";
 import Header from '@/components/Header'
-import { useState, useEffect } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { getStripe } from '@/lib/stripe'
@@ -15,7 +15,7 @@ const readexPro = Readex_Pro({
   subsets: ["latin"],
 });
 
-export default function Pricing() {
+function PricingInner() {
     const [loading, setLoading] = useState(false)
     const { user } = useAuth()
     const router = useRouter()
@@ -150,5 +150,13 @@ export default function Pricing() {
             
         </div>
         
+    )
+}
+
+export default function Pricing() {
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-black" />}> 
+        <PricingInner />
+      </Suspense>
     )
 }

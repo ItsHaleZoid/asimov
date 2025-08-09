@@ -2,6 +2,7 @@
 
 import { BlurFade } from '@/components/ui/blur-fade'
 import Image from 'next/image'
+import Link from 'next/link'
 interface SubscriptionLoadingProps {
   message?: string
 }
@@ -58,19 +59,19 @@ export function SubscriptionRequired({ returnUrl }: { returnUrl: string }) {
             </p>
             
             <div className="space-y-3 pt-4">
-              <a 
+              <Link
                 href={`/pricing?returnUrl=${encodeURIComponent(returnUrl)}`}
                 className="block w-full bg-gradient-to-r from-white to-white/90 text-black font-medium py-3 px-6 rounded-lg hover:from-white/90 hover:to-white/80 transition-colors"
               >
                 View Pricing Plan
-              </a>
+              </Link>
               
-              <a 
+              <Link 
                 href="/"
                 className="block w-full text-white/70 font-medium py-3 px-6 border border-white/20 rounded-lg hover:bg-white/5 transition-colors"
               >
                 Back to Home
-              </a>
+              </Link>
             </div>
           </div>
         </BlurFade>

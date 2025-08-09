@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getServerStripe } from '@/lib/stripe'
+import type Stripe from 'stripe'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceRoleKey = process.env.SUPABSE_SERVICE_ROLE_KEY!
@@ -31,8 +32,8 @@ export async function POST(req: NextRequest) {
   try {
     const stripe = getServerStripe()
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
+  } catch (err: Error | unknown) {
+    console.error('Webhook signature verification failed:', err instanceof Error ? err.message : String(err))
     return NextResponse.json(
       { error: 'Invalid signature' },
       { status: 400 }
@@ -67,15 +68,19 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function handleSubscriptionUpdate(subscription: any) {
+async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const { 
     id: subscriptionId, 
-    customer: customerId, 
+    customer: customerRaw, 
     status, 
-    current_period_start, 
-    current_period_end,
     metadata 
   } = subscription
+
+  // Some Stripe TypeScript definitions may not include these fields; read defensively
+  const periodStart = (subscription as Stripe.Subscription & { current_period_start?: number }).current_period_start;
+  const periodEnd = (subscription as Stripe.Subscription & { current_period_end?: number }).current_period_end;
+
+  const customerId = typeof customerRaw === 'string' ? customerRaw : customerRaw.id;
 
   console.log('Processing subscription update:', {
     subscriptionId,
@@ -87,35 +92,6 @@ async function handleSubscriptionUpdate(subscription: any) {
   const userId = metadata?.userId
   if (!userId) {
     console.error('No userId found in subscription metadata:', metadata)
-    
-    // Try to find user by customer email if available
-    // This is a fallback approach
-    console.log('Attempting to find user by customer ID in Stripe...')
-    
-    try {
-      const stripe = getServerStripe()
-      const customer = await stripe.customers.retrieve(customerId)
-      
-      if (customer && !customer.deleted && customer.email) {
-        console.log('Found customer email:', customer.email)
-        
-        // Look up user by email in Supabase
-        const { data: user, error } = await supabaseAdmin.auth.admin.getUserByEmail(customer.email)
-        
-        if (user && user.user) {
-          console.log('Found user by email:', user.user.id)
-          return handleSubscriptionUpdate({
-            ...subscription,
-            metadata: { ...metadata, userId: user.user.id }
-          })
-        } else {
-          console.error('Could not find user by email:', customer.email, error)
-        }
-      }
-    } catch (err) {
-      console.error('Error looking up customer:', err)
-    }
-    
     return
   }
 
@@ -126,8 +102,8 @@ async function handleSubscriptionUpdate(subscription: any) {
       stripe_customer_id: customerId,
       stripe_subscription_id: subscriptionId,
       status,
-      current_period_start: current_period_start ? new Date(current_period_start * 1000).toISOString() : null,
-      current_period_end: current_period_end ? new Date(current_period_end * 1000).toISOString() : null,
+      current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       updated_at: new Date().toISOString()
     }, {
       onConflict: 'user_id'
@@ -141,7 +117,7 @@ async function handleSubscriptionUpdate(subscription: any) {
   console.log(`Updated subscription for user ${userId}: ${status}`)
 }
 
-async function handleSubscriptionDeleted(subscription: any) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const subscriptionId = subscription.id
   const userId = subscription.metadata?.userId
 

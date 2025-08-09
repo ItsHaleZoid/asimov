@@ -83,9 +83,9 @@ export async function GET(req: NextRequest) {
         .from('user_subscriptions')
         .update({
           status: stripeSubscription.status,
-          // @ts-ignore
+          // @ts-expect-error - Stripe timestamps are numbers but TS shows them as potentially undefined
           current_period_start: new Date(stripeSubscription.current_period_start   * 1000).toISOString(),
-          // @ts-ignore
+          // @ts-expect-error - Stripe timestamps are numbers but TS shows them as potentially undefined
           current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
         lastBillingDate
       })
 
-    } catch (stripeError: any) {
+    } catch (stripeError: unknown) {
       console.error('Stripe API error:', stripeError)
       
       // Fall back to database data if Stripe API fails

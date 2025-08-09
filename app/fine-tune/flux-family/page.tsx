@@ -5,8 +5,6 @@ import Image from "next/image";
 import { LiquidDropdown } from '@/components/ui/liquid-dropdown';
 import { LiquidInput } from '@/components/ui/liquid-glass-input';
 import { SearchIcon } from "lucide-react";
-import LightRays from '@/components/ui/LightRays';
-import { BlurFade } from '@/components/ui/blur-fade';
 import { StarsBackground } from '@/components/ui/stars';
 import DatasetsList from '@/components/ui/datasets-list';
 import { Playfair_Display } from 'next/font/google';
@@ -24,7 +22,7 @@ function FineTunePage() {
   const [selectedModel, setSelectedModel] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleDatasetSelect = (dataset: any) => {
+  const handleDatasetSelect = (dataset: { id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }) => {
     console.log("Selected dataset:", dataset);
   };
 

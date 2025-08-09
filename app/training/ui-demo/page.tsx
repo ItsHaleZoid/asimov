@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
-import { StarsBackground } from '@/components/ui/stars';
 import TrainingProgressDemo from '@/components/ui/training-progress-demo';
 import { withSubscriptionGuard } from '@/lib/hoc/withSubscriptionGuard';
 

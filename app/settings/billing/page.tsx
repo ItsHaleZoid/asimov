@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -21,13 +21,7 @@ export default function BillingPage() {
     }
   }, [loading, user, router]);
 
-  useEffect(() => {
-    if (!loading && user) {
-      fetchSubscriptionData();
-    }
-  }, [loading, user]);
-
-  const fetchSubscriptionData = async () => {
+  const fetchSubscriptionData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
@@ -49,15 +43,21 @@ export default function BillingPage() {
       const data = await response.json();
       setSubscriptionStatus(data.status || 'No subscription');
       setLastBillingDate(data.lastBillingDate || 'Not available');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching subscription:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Unknown error');
       setSubscriptionStatus('Error loading');
       setLastBillingDate('Error loading');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [session?.access_token]);
+
+  useEffect(() => {
+    if (!loading && user) {
+      fetchSubscriptionData();
+    }
+  }, [loading, user, fetchSubscriptionData]);
 
   const handleCancelSubscription = async () => {
     setCancelLoading(true);
@@ -88,9 +88,9 @@ export default function BillingPage() {
       
       // Redirect to Stripe customer portal
       window.location.href = url;
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error creating portal session:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setCancelLoading(false);
     }

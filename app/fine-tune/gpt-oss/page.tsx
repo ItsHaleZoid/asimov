@@ -6,13 +6,10 @@ import Image from "next/image";
 import { LiquidDropdown } from '@/components/ui/liquid-dropdown';
 import { LiquidInput } from '@/components/ui/liquid-glass-input';
 import { SearchIcon } from "lucide-react";
-import LightRays from '@/components/ui/LightRays';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { withSubscriptionGuard } from '@/lib/hoc/withSubscriptionGuard';
-import { StarsBackground } from '@/components/ui/stars';
 import DatasetsList from '@/components/ui/datasets-list';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
-import Spline from '@splinetool/react-spline';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { Readex_Pro } from 'next/font/google';
@@ -26,10 +23,10 @@ function FineTunePage() {
   const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
-  const [selectedDataset, setSelectedDataset] = useState<any>(null);
+  const [selectedDataset, setSelectedDataset] = useState<{ id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string } | null>(null);
   const [selectedSubset, setSelectedSubset] = useState("");
   const [isStarting, setIsStarting] = useState(false);
-  const [filteredDatasets, setFilteredDatasets] = useState<any[]>([]);
+  const [filteredDatasets, setFilteredDatasets] = useState<{ id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -40,7 +37,7 @@ function FineTunePage() {
     }
   }, [user, authLoading, router]);
 
-  const handleDatasetSelect = (dataset: any) => {
+  const handleDatasetSelect = (dataset: { id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }) => {
     setSelectedDataset(dataset);
     setSelectedSubset(dataset.subsets?.[0] || ""); // Auto-select first subset
     setSearchQuery("");

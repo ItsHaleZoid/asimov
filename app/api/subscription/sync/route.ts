@@ -87,15 +87,18 @@ export async function POST(req: NextRequest) {
       }
 
       // Insert or update subscription
-      const { data, error } = await supabaseAdmin
+      const periodStart = (subscription as { current_period_start?: number }).current_period_start;
+      const periodEnd = (subscription as { current_period_end?: number }).current_period_end;
+
+      const { error } = await supabaseAdmin
         .from('user_subscriptions')
         .upsert({
           user_id: user.id,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscription.id,
           status: subscription.status,
-          current_period_start: subscription.current_period_start ? new Date(subscription.current_period_start * 1000).toISOString() : null,
-          current_period_end: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
+          current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
+          current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'stripe_subscription_id'

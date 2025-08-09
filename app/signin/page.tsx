@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BlurFade } from "@/components/ui/blur-fade";
@@ -8,11 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-interface SignInPageProps {
-  className?: string;
-}
-
-export const SignInPage = ({ className }: SignInPageProps) => {
+export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [step, setStep] = useState<"auth" | "success">("auth");
@@ -78,13 +74,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   };
 
-  // Reset form
-  const resetForm = () => {
-    setEmail("");
-    setPassword("");
-    setError("");
-    setStep("auth");
-  };
+  // Reset handled inline where needed
 
   // Show loading while checking auth
   if (authLoading) {
@@ -110,7 +100,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
          style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
     </div>
    
-      <div className={cn("flex w-[100%] flex-col min-h-screen relative bg-white/2 backdrop-blur-sm", className)}>
+      <div className={cn("flex w-[100%] flex-col min-h-screen relative bg-white/2 backdrop-blur-sm") }>
         <div className="absolute inset-0 z-0">
         </div>
         
@@ -211,7 +201,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                         {/* Link to sign up */}
                         <div className="mt-6 text-center">
                           <p className="text-white/60 text-sm">
-                            Don't have an account?{' '}
+                            Don&#39;t have an account?{' '}
                             <Link href="/get-started" className="text-white underline hover:text-white/80 transition-colors">
                               Sign up here
                             </Link>
@@ -220,17 +210,7 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                       </BlurFade>
                     </div>
                     
-                    <BlurFade delay={0.5} inView>
-                                              <p className="text-xs text-white/80 pt-10">
-                        By signing in, you agree to the{' '}
-                        <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">
-                          Terms of Service
-                        </Link>{', '}
-                        <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">
-                          Privacy Policy
-                        </Link>.
-                      </p>
-                    </BlurFade>
+                   
                   </div>
 
                 ) : (
@@ -275,6 +255,4 @@ export const SignInPage = ({ className }: SignInPageProps) => {
  
     </div>
   );
-};
-
-export default SignInPage;
+}

@@ -1,9 +1,7 @@
 "use client"
-import React, { useState, useEffect, use } from 'react';
-import { ChevronDown, Mail, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { LiquidDropdown } from './ui/liquid-dropdown';
-import { LiquidInput } from './ui/liquid-glass-input';
 import { IoMdArrowDropright } from "react-icons/io";
 import { Space_Grotesk } from 'next/font/google';
 import { BlurFade } from './ui/blur-fade';
@@ -19,14 +17,11 @@ const spaceGrotesk = Space_Grotesk({
 
 
 export default function Hero() {
-  const [scrollY, setScrollY] = useState(0);
   const [selectedModel, setSelectedModel] = useState("");
   const router = useRouter();
   const { user } = useAuth();
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    // No-op effect placeholder
   }, []);
 
   const handleFineTuneClick = () => {

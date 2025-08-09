@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BsGoogle } from "react-icons/bs";
@@ -100,14 +100,6 @@ export default function GetStartedPage() {
     }
   };
 
-  // Reset form
-  const resetForm = () => {
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    setError("");
-    setStep("signup");
-  };
 
 
 
@@ -260,11 +252,7 @@ export default function GetStartedPage() {
                       </BlurFade>
                     </div>
                     
-                    <BlurFade delay={0.5} inView>
-                      <p className="text-xs text-white/80 pt-10">
-                        By creating an account, you agree to the <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">Terms of Service</Link>, <Link href="#" className="underline text-white/60 hover:text-white/60 transition-colors">Privacy Policy</Link>.
-                      </p>
-                    </BlurFade>
+                   
                   </div>
 
                 ) : (

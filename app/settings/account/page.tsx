@@ -35,8 +35,8 @@ export default function AccountSettingsPage() {
       setHfToken('');
       setHfUsername('');
       const inputs = document.querySelectorAll('input[data-form-type="other"]');
-      inputs.forEach((input: any) => {
-        input.value = '';
+      inputs.forEach((input) => {
+        (input as HTMLInputElement).value = '';
       });
     }, 100);
     return () => clearTimeout(timer);
@@ -82,7 +82,7 @@ export default function AccountSettingsPage() {
         const error = await response.json();
         setMessage({ type: 'error', text: error.detail || 'Failed to save token' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Network error. Please try again.' });
     } finally {
       setSaving(false);
@@ -109,7 +109,7 @@ export default function AccountSettingsPage() {
         const error = await response.json();
         setMessage({ type: 'error', text: error.detail || 'Failed to delete token' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'Network error. Please try again.' });
     } finally {
       setDeleting(false);
@@ -150,9 +150,11 @@ export default function AccountSettingsPage() {
       <BlurFade delay={0} className="bg-white/2 backdrop-blur-md border border-white/10 p-6 mb-8">
         <h2 className={`${gabarito.className} text-xl font-semibold mb-4`}>Account Information</h2>
         <div className="flex items-center gap-4">
-          <img
+          <Image
             src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '/default-avatar.png'}
             alt="Profile"
+            width={64}
+            height={64}
             className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
           />
           <div>

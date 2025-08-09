@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerStripe } from '@/lib/stripe'
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { sessionId: string } }
-) {
+export async function GET(req: NextRequest) {
   try {
-    const { sessionId } = params
+    const url = new URL(req.url)
+    const parts = url.pathname.split('/')
+    const sessionId = parts[parts.length - 1]
 
     if (!sessionId) {
       return NextResponse.json(

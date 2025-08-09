@@ -56,11 +56,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         url: portalSession.url
       })
-    } catch (stripeError: any) {
+    } catch (stripeError: unknown) {
       console.error('Stripe API error:', stripeError)
       
       // Check if it's a customer portal configuration issue
-      if (stripeError?.code === 'billing_portal_session_not_allowed') {
+      if (stripeError && typeof stripeError === 'object' && 'code' in stripeError && stripeError.code === 'billing_portal_session_not_allowed') {
         return NextResponse.json(
           { 
             error: 'Customer portal not configured', 
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { 
           error: 'Failed to create portal session',
-          details: stripeError?.message || 'Unknown Stripe error'
+          details: stripeError && typeof stripeError === 'object' && 'message' in stripeError ? stripeError.message : 'Unknown Stripe error'
         },
         { status: 500 }
       )

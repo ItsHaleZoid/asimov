@@ -1,8 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronDown, Mail, Search } from 'lucide-react';
-import { LiquidButton } from "@/components/ui/liquid-glass-button";
-import { LiquidDropdown } from './ui/liquid-dropdown';
-import { LiquidInput } from './ui/liquid-glass-input';
+import React from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Space_Grotesk } from 'next/font/google';
 
 const spaceGrotesk = Space_Grotesk({
@@ -11,13 +8,6 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export default function Hero() {
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   return (
     <div className="relative w-full min-h-screen">

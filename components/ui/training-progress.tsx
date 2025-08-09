@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
@@ -30,6 +30,13 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
   const [showLogs, setShowLogs] = useState(false);
   const [elapsedTime, setElapsedTime] = useState('00:00:00');
   const router = useRouter();
+
+  const handleJobUpdate = useCallback((updatedJob: any) => {
+    if (onJobUpdate) {
+      onJobUpdate(updatedJob);
+    }
+  }, [onJobUpdate]);
+
   useEffect(() => {
     let statusInterval: NodeJS.Timeout | null = null;
     
@@ -41,9 +48,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
           const response = await fetch(`http://localhost:8000/api/job/${job.id}`, { headers });
           if (response.ok) {
             const updatedJob = await response.json();
-            if (onJobUpdate) {
-              onJobUpdate(updatedJob);
-            }
+            handleJobUpdate(updatedJob);
           }
         } catch (error) {
           console.error('Failed to fetch job status:', error);
@@ -73,7 +78,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
       if (statusInterval) clearInterval(statusInterval);
       clearInterval(timeInterval);
     };
-  }, [job.id, job.start_time, enablePolling]);
+  }, [job.id, job.start_time, enablePolling, handleJobUpdate]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

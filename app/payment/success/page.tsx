@@ -1,26 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
 import Header from '@/components/Header'
 import { invalidateSubscriptionCache } from '@/lib/hooks/useSubscriptionStatus'
-import { Readex_Pro } from 'next/font/google'
 
-const readexPro = Readex_Pro({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-readex-pro',
-})
-
-export default function PaymentSuccess() {
+function PaymentSuccessInner() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const sessionId = searchParams.get('session_id')
   const returnUrl = searchParams.get('returnUrl')
-  const [session, setSession] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [redirectCountdown, setRedirectCountdown] = useState(5)
 
@@ -32,7 +24,6 @@ export default function PaymentSuccess() {
       fetch(`/api/stripe/session/${sessionId}`)
         .then((res) => res.json())
         .then((data) => {
-          setSession(data)
           setLoading(false)
         })
         .catch((error) => {
@@ -123,5 +114,13 @@ export default function PaymentSuccess() {
         </section>
       </div>
     </div>
+  )
+}
+
+export default function PaymentSuccess() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" /> }>
+      <PaymentSuccessInner />
+    </Suspense>
   )
 }

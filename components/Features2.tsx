@@ -1,7 +1,4 @@
-import { PointerHighlight } from "@/components/ui/pointer-highlight";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { cn } from "@/lib/utils";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
 
 
 export default function Features() {

@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Gabarito, Geist, Space_Grotesk, Inter } from "next/font/google";
+import Image from 'next/image';
+import { Gabarito } from "next/font/google";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { useAuth } from "@/lib/auth-context";
 import InstanceStatusButton from "@/components/ui/instance-status-button";
@@ -12,32 +13,14 @@ interface HeaderProps {
   className?: string;
 }
 
-const geist = Geist({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-});
-
 const gabarito = Gabarito({
   weight: ["400"],
-  subsets: ["latin"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-});
-
-const inter = Inter({
-  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
 });
 
 // Navigation links component
 function NavLinks() {
   const { user } = useAuth();
-  const router = useRouter();
-  
-
   
   // Unauthenticated navigation
   return (
@@ -60,7 +43,17 @@ function NavLinks() {
 }
 
 // Profile dropdown component
-function ProfileDropdown({ user }: { user: any }) {
+type MinimalUser = {
+  email?: string;
+  user_metadata?: {
+    avatar_url?: string;
+    picture?: string;
+    full_name?: string;
+    name?: string;
+  };
+};
+
+function ProfileDropdown({ user }: { user: MinimalUser | null }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const { setShowSignOutConfirmation } = useAuth();
@@ -71,9 +64,11 @@ function ProfileDropdown({ user }: { user: any }) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 p-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors px-4"
       >
-        <img
+        <Image
           src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '/default-avatar.png'}
           alt="Profile"
+          width={32}
+          height={32}
           className="w-8 h-8 rounded-full object-cover"
         />
         <span className={`${gabarito.className} text-white text-sm font-medium hidden sm:block`}>
@@ -173,10 +168,7 @@ export default function Header({ className }: HeaderProps) {
       <div className="flex items-center justify-between px-6 py-4 md:px-8 lg:px-12">
         {/* Logo */}
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
-          
-          <img src="/logo-flat-transparent.png" alt="Logo" className="h-19 -my-3 w-auto cursor-pointer" onClick={() => router.push('/')} />
-        
-          
+          <Image src="/logo-flat-transparent.png" alt="Logo" width={76} height={76} className="h-19 -my-3 w-auto cursor-pointer" />
         </div>
 
         {/* Navigation */}

@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import Image from "next/image"
 import { Readex_Pro } from "next/font/google"
 
 interface FooterProps {
@@ -30,7 +32,7 @@ const readexPro = Readex_Pro({
 })
 
 export default function Footer({
-  logo = <img src="/logo-flat-transparent.png" alt="Logo" className="h-8 w-auto" />,
+  logo = <Image src="/logo-flat-transparent.png" alt="Logo" width={32} height={32} className="h-8 w-auto" />,
   brandName = "AsimovAI",
   socialLinks = [],
   mainLinks = [
@@ -52,13 +54,10 @@ export default function Footer({
     <footer className={`w-full pb-6 pt-16 lg:pb-8 lg:pt-24 px-18 backdrop-blur-4xl border-t border-white/30 bg-gradient-to-b from-[#451cff]/30 via-violet-700/0 to-black/0 ${readexPro.className}`}>
       <div className="w-full px-4 lg:px-8">
         <div className="md:flex md:items-start md:justify-between">
-          <a
-            href="/"
-            className={`flex items-center gap-x-2 ${readexPro.className}`}
-          >
+          <Link href="/" className={`flex items-center gap-x-2 ${readexPro.className}`}>
             {logo}
             <span className={`font-light text-xl text-white ${readexPro.className}`}>{brandName}</span>
-          </a>
+          </Link>
           <ul className="flex list-none mt-6 md:mt-0 space-x-3">
             {socialLinks.map((link, i) => (
               <li key={i}>

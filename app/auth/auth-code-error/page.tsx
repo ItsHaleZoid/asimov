@@ -4,7 +4,7 @@ export default function AuthCodeError() {
       <div className="text-center space-y-4">
         <h1 className="text-2xl font-bold text-white">Authentication Error</h1>
         <p className="text-white/70">
-          Sorry, we couldn't sign you in. Please try again.
+          Sorry, we couldn&apos;t sign you in. Please try again.
         </p>
         <a 
           href="/signin" 

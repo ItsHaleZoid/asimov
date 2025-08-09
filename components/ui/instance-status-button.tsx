@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { getAuthHeaders } from '@/lib/utils';
@@ -30,7 +30,7 @@ export default function InstanceStatusButton({ className }: InstanceStatusButton
   const { user } = useAuth();
   const router = useRouter();
 
-  const fetchUserJobs = async () => {
+  const fetchUserJobs = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -70,7 +70,7 @@ export default function InstanceStatusButton({ className }: InstanceStatusButton
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -85,7 +85,7 @@ export default function InstanceStatusButton({ className }: InstanceStatusButton
     const interval = setInterval(fetchUserJobs, 5000);
 
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, fetchUserJobs]);
 
   // Handle auto-hide for completed jobs after 2 minutes
   useEffect(() => {

@@ -1,6 +1,5 @@
 import MainPage from "@/components/MainPage"
 import Header from "@/components/Header"
-import { StarsBackground } from "@/components/ui/stars"
 
 
 export default function Home() {
