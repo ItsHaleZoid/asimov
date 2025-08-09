@@ -8,6 +8,7 @@ import { LiquidInput } from '@/components/ui/liquid-glass-input';
 import { SearchIcon } from "lucide-react";
 import { StarsBackground } from '@/components/ui/stars';
 import DatasetsList from '@/components/ui/datasets-list';
+import { withSubscriptionGuard } from '@/lib/hoc/withSubscriptionGuard';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
@@ -19,7 +20,7 @@ const readexPro = Readex_Pro({
   weight: ['200', '300', '400', '500', '600', '700'],
 });
 
-export default function FineTunePage() {
+function FineTunePage() {
   const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
@@ -279,3 +280,7 @@ export default function FineTunePage() {
     </div>
   );
 }
+
+export default withSubscriptionGuard(FineTunePage, {
+  loadingMessage: "Verifying subscription for Mistral fine-tuning..."
+});

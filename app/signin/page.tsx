@@ -15,8 +15,6 @@ interface SignInPageProps {
 export const SignInPage = ({ className }: SignInPageProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [authMode, setAuthMode] = useState<"signin" | "otp">("signin");
   const [step, setStep] = useState<"auth" | "success">("auth");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -32,50 +30,24 @@ export const SignInPage = ({ className }: SignInPageProps) => {
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !password) return;
     
     setLoading(true);
     setError("");
     
     try {
-      if (authMode === "signin") {
-        // Email/Password Sign In
-        if (!password) {
-          setError("Password is required");
-          setLoading(false);
-          return;
-        }
-        
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) {
-          console.error('Sign in error:', error.message);
-          setError(error.message);
-        } else {
-          setStep("success");
-          setTimeout(() => router.push('/'), 2000);
-        }
-
-      } else if (authMode === "otp") {
-        // Email Link Sign In
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            shouldCreateUser: false,
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-        
-        if (error) {
-          console.error('Error sending email link:', error.message);
-          setError(error.message);
-        } else {
-          setStep("success");
-          setError("");
-        }
+      // Email/Password Sign In
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        console.error('Sign in error:', error.message);
+        setError(error.message);
+      } else {
+        setStep("success");
+        setTimeout(() => router.push('/'), 2000);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -106,23 +78,13 @@ export const SignInPage = ({ className }: SignInPageProps) => {
     }
   };
 
-  // Reset form when switching auth modes
+  // Reset form
   const resetForm = () => {
     setEmail("");
     setPassword("");
     setError("");
     setStep("auth");
   };
-
-  // Handle auth mode changes
-  const switchAuthMode = (mode: "signin" | "otp") => {
-    setAuthMode(mode);
-    resetForm();
-  };
-
-
-
-
 
   // Show loading while checking auth
   if (authLoading) {
@@ -164,17 +126,14 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     <BlurFade delay={0.1} inView>
                       <div className="space-y-1">
                         <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">
-                          Welcome to AsimovAI
+                          Welcome Back!
                         </h1>
                         <p className="text-[1.2rem] text-white/70 font-light">
-                          {authMode === "signin" ? "Sign in to your account" : 
-                           "Get a sign-in link via email"}
+                          Sign in to your account
                         </p>
                       </div>
                     </BlurFade>
 
-
-                    
                     <div className="space-y-4">
                       <BlurFade delay={0.2} inView>
                         <button 
@@ -210,29 +169,26 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                             disabled={loading}
                           />
                           
-                          {/* Only show password field when not in OTP mode */}
-                          {authMode !== "otp" && (
-                            <input 
-                              type="password" 
-                              placeholder="Password"
-                              value={password}
-                              onChange={(e) => {
-                                setPassword(e.target.value);
-                                setError("");
-                              }}
-                              className="w-full backdrop-blur-[1px] text-white border border-white/30 rounded-full py-3 px-4 focus:outline-none focus:border-white/50 text-center"
-                              required
-                              disabled={loading}
-                            />
-                          )}
+                          <input 
+                            type="password" 
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => {
+                              setPassword(e.target.value);
+                              setError("");
+                            }}
+                            className="w-full backdrop-blur-[1px] text-white border border-white/30 rounded-full py-3 px-4 focus:outline-none focus:border-white/50 text-center"
+                            required
+                            disabled={loading}
+                            autoComplete="new-password"
+                          />
                           
                           <button 
                             type="submit"
                             disabled={loading}
                             className="w-full bg-white text-black font-medium py-3 px-4 rounded-full hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {loading ? 'Processing...' : 
-                             authMode === "signin" ? "Sign In" : "Send Link"}
+                            {loading ? 'Processing...' : "Sign In"}
                           </button>
                         </form>
                         
@@ -249,32 +205,6 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                             }`}>
                               {error}
                             </p>
-                          </div>
-                        )}
-                        
-                        {/* OTP Option - only show when not in OTP mode */}
-                        {authMode !== "otp" && (
-                          <div className="mt-4">
-                            <button
-                              type="button"
-                              onClick={() => switchAuthMode("otp")}
-                              className="text-white/60 hover:text-white/80 text-sm underline transition-colors"
-                            >
-                              Sign in with email link instead
-                            </button>
-                          </div>
-                        )}
-                        
-                        {/* Back to password option when in OTP mode */}
-                        {authMode === "otp" && (
-                          <div className="mt-4">
-                            <button
-                              type="button"
-                              onClick={() => switchAuthMode("signin")}
-                              className="text-white/60 hover:text-white/80 text-sm underline transition-colors"
-                            >
-                              Sign in with password instead
-                            </button>
                           </div>
                         )}
 
@@ -308,10 +238,10 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     <BlurFade delay={0.1} inView>
                       <div className="space-y-1">
                         <h1 className="text-[2.5rem] font-bold leading-[1.1] tracking-tight text-white">
-                          {authMode === "otp" ? "Check Your Email!" : "You're in!"}
+                          You're in!
                         </h1>
                         <p className="text-[1.25rem] text-white/50 font-light">
-                          {authMode === "otp" ? "We sent you a sign-in link" : "Welcome back"}
+                          Welcome back
                         </p>
                       </div>
                     </BlurFade>
@@ -327,26 +257,12 @@ export const SignInPage = ({ className }: SignInPageProps) => {
                     </BlurFade>
                     
                     <BlurFade delay={0.3} inView>
-                      {authMode === "otp" ? (
-                        <div className="space-y-3">
-                          <p className="text-white/60 text-sm">
-                            Click the link in your email to complete sign-in
-                          </p>
-                          <button 
-                            onClick={() => setStep("auth")}
-                            className="w-full rounded-full bg-white/10 text-white font-medium py-3 hover:bg-white/20 transition-colors"
-                          >
-                            Back to Sign In
-                          </button>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={() => router.push('/')}
-                          className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors"
-                        >
-                          Continue to Dashboard
-                        </button>
-                      )}
+                      <button 
+                        onClick={() => router.push('/')}
+                        className="w-full rounded-full bg-white text-black font-medium py-3 hover:bg-white/90 transition-colors"
+                      >
+                        Continue to Dashboard
+                      </button>
                     </BlurFade>
                   </div>
                 )}

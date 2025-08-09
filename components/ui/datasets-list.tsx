@@ -11,12 +11,12 @@ interface Dataset {
   downloads: number
   hf_link: string
   likes: number
-  category: 'mistral' | 'gemma' | 'flux' | 'general'
+  category: 'mistral' | 'gemma' | 'flux' | 'general' | 'gpt-oss'
 }
 
 interface DatasetsListProps {
   searchQuery?: string
-  modelFamily?: 'mistral' | 'gemma' | 'flux'
+  modelFamily?: 'mistral' | 'gemma' | 'flux' | 'gpt-oss'
   onDatasetSelect?: (dataset: Dataset) => void
   selectedDataset?: { hf_link: string } | null
   onFilteredDatasetsChange?: (datasets: Dataset[]) => void
@@ -26,11 +26,11 @@ const MOCK_DATASETS: Dataset[] = [
   // Mistral-specific datasets
   {
     id: '1',
-    name: 'Awesome ChatGPT Prompts',
-    description: 'A curated list of prompts for ChatGPT',
-    subsets: ['default'],
+    name: 'Code Contests by Deepmind',
+    description: 'A dataset of code examples by Deepmind for code instruction tuning. These examples have been taken for various high-level programming contests .',
+    subsets: ['train'],
     downloads: 145000,
-    hf_link: 'fka/awesome-chatgpt-prompts',
+    hf_link: 'deepmind/code_contests',
     likes: 85200,
     category: 'general'
   },
@@ -55,7 +55,42 @@ const MOCK_DATASETS: Dataset[] = [
     hf_link: 'nvidia/OpenCodeInstruct',
     likes: 4100,
     category: 'general'
+  },
+  {
+    id: '4',
+    name: 'GSM8K by OpenAI',
+    description: 'A dataset of 8k math word problems and their solutions. These problems are taken from the GSM8K dataset by OpenAI.',
+    subsets: ['main', 'socratic'],
+    downloads: 145000,
+    hf_link: 'openai/gsm8k',
+    likes: 85200,
+    category: 'general'
+  },
+
+  {
+    id: '5',
+    name: 'Math-220K by OpenR1',
+    description: 'A dataset of 220k basic to complex mathematical problems and their solutions. These problems ranges from basic arithmetic to advanced calculus.',
+    subsets: ['train'],
+    downloads: 145000,
+    hf_link: 'openr1/math-220k',
+    likes: 85200,
+    category: 'general'
+  },
+
+  {
+    id: '6',
+    name: 'Databricks Dolly 15K',
+    description: 'A dataset of 15k instruction-following conversations with biggest proprietary LLMs (Such as ChatGPT, Claude, Gemini, etc.) to enable Open-source models to mimic them.',
+    subsets: ['train'],
+    downloads: 145000,
+    hf_link: 'databricks/databricks-dolly-15k',
+    likes: 85200,
+    category: 'general'
   }
+
+  
+  
 ]
 
 export default function DatasetsList({ searchQuery, modelFamily, onDatasetSelect, selectedDataset, onFilteredDatasetsChange }: DatasetsListProps) {

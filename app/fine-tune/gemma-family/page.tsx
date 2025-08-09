@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import Header from "@/components/Header";
+import { withSubscriptionGuard } from '@/lib/hoc/withSubscriptionGuard';
 import Image from "next/image";
 import { LiquidDropdown } from '@/components/ui/liquid-dropdown';
 import { LiquidInput } from '@/components/ui/liquid-glass-input';
@@ -21,7 +22,7 @@ const readexPro = Readex_Pro({
   weight: ['200', '300', '400', '500', '600', '700'],
 });
 
-export default function FineTunePage() {
+function FineTunePage() {
   const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
@@ -171,11 +172,11 @@ export default function FineTunePage() {
         
        
       <div className="absolute top-0 left-0 w-full h-full rotate-180 mt-20 transform skew-x-2 skew-y-1 scale-105">
-        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#1702ff] via-[#000000] to-transparent blur-3xl" 
+        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#029aff] via-[#000000] to-transparent blur-3xl" 
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
-        <div className="absolute -top-100 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#009dff] via-amber-50/4 to-transparent blur-[80px] rounded-full"
+        <div className="absolute -top-100 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#0037ff] via-amber-50/4 to-transparent blur-[80px] rounded-full"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%", mixBlendMode: "screen"}}></div>
-        <div className="absolute -top-50 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#0800ff] via-transparent to-transparent blur-[500px] rounded-full -z-10"
+        <div className="absolute -top-50 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#8cfdff] via-transparent to-transparent blur-[500px] rounded-full -z-10"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
       </div>
       
@@ -296,3 +297,7 @@ export default function FineTunePage() {
 
   );
 }
+
+export default withSubscriptionGuard(FineTunePage, {
+  loadingMessage: "Verifying subscription for Gemma fine-tuning..."
+});

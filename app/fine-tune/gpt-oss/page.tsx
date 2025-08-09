@@ -8,6 +8,7 @@ import { LiquidInput } from '@/components/ui/liquid-glass-input';
 import { SearchIcon } from "lucide-react";
 import LightRays from '@/components/ui/LightRays';
 import { BlurFade } from '@/components/ui/blur-fade';
+import { withSubscriptionGuard } from '@/lib/hoc/withSubscriptionGuard';
 import { StarsBackground } from '@/components/ui/stars';
 import DatasetsList from '@/components/ui/datasets-list';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
@@ -21,7 +22,7 @@ const readexPro = Readex_Pro({
   weight: ['200', '300', '400', '500', '600', '700'],
 });
 
-export default function FineTunePage() {
+function FineTunePage() {
   const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
@@ -242,7 +243,7 @@ export default function FineTunePage() {
               <div className="absolute justify-center items-center mt-2 z-50 max-h-96 overflow-y-auto mr-3">
                 <DatasetsList 
                   searchQuery={searchQuery}
-                  modelFamily="gemma"
+                  modelFamily="gpt-oss"
                   onDatasetSelect={handleDatasetSelect}
                   selectedDataset={selectedDataset}
                   onFilteredDatasetsChange={setFilteredDatasets}
@@ -293,3 +294,7 @@ export default function FineTunePage() {
 
   );
 }
+
+export default withSubscriptionGuard(FineTunePage, {
+  loadingMessage: "Verifying subscription for GPT fine-tuning..."
+});

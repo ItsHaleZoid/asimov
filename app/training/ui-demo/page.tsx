@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { StarsBackground } from '@/components/ui/stars';
 import TrainingProgressDemo from '@/components/ui/training-progress-demo';
+import { withSubscriptionGuard } from '@/lib/hoc/withSubscriptionGuard';
 
 // Mock job data for UI demonstration
 const mockJobs = {
@@ -92,7 +93,7 @@ const mockJobs = {
   }
 };
 
-export default function TrainingDemoPage() {
+function TrainingDemoPage() {
   const router = useRouter();
   const [selectedDemo, setSelectedDemo] = useState<keyof typeof mockJobs>('training');
   const [job, setJob] = useState(mockJobs[selectedDemo]);
@@ -145,3 +146,7 @@ export default function TrainingDemoPage() {
     </div>
   );
 }
+
+export default withSubscriptionGuard(TrainingDemoPage, {
+  loadingMessage: "Verifying subscription for training demo..."
+});

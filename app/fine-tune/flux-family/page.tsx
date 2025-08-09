@@ -10,6 +10,7 @@ import { BlurFade } from '@/components/ui/blur-fade';
 import { StarsBackground } from '@/components/ui/stars';
 import DatasetsList from '@/components/ui/datasets-list';
 import { Playfair_Display } from 'next/font/google';
+import { withSubscriptionGuard } from '@/lib/hoc/withSubscriptionGuard';
 
 
 
@@ -18,7 +19,7 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
 });
 
-export default function FineTunePage() {
+function FineTunePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -121,3 +122,7 @@ export default function FineTunePage() {
 
   );
 }
+
+export default withSubscriptionGuard(FineTunePage, {
+  loadingMessage: "Verifying subscription for Flux fine-tuning..."
+});

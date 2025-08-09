@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Gabarito, Geist, Space_Grotesk, Inter } from "next/font/google";
 import { LiquidButton } from "@/components/ui/liquid-glass-button";
 import { useAuth } from "@/lib/auth-context";
+import InstanceStatusButton from "@/components/ui/instance-status-button";
 
 
 interface HeaderProps {
@@ -40,13 +41,8 @@ function NavLinks() {
   
   // Unauthenticated navigation
   return (
-    <nav className="hidden md:flex items-center justify-center space-x-8 ml-21">
-      <a 
-        href="#" 
-        className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
-      >
-        Models
-      </a>
+    <nav className="hidden md:flex items-center justify-start space-x-8 ml-6 md:ml-8">
+      
       <a 
         href="/pricing" 
         className={`${gabarito.className} text-white/80 hover:text-white transition-colors duration-200 font-medium text-center`}
@@ -102,7 +98,7 @@ function ProfileDropdown({ user }: { user: any }) {
             <p className="text-white/60 text-xs">{user?.email}</p>
           </div>
           <button
-            onClick={() => router.push('/settings')}
+            onClick={() => router.push('/settings/account')}
             className={`${gabarito.className} w-full text-left px-3 py-2 text-white hover:text-white hover:bg-white/5 transition-colors text-sm`}
           >
             Settings
@@ -137,7 +133,12 @@ function AuthButtons() {
   }
   
   if (user) {
-    return <ProfileDropdown user={user} />;
+    return (
+      <div className="flex items-center">
+        <InstanceStatusButton />
+        <ProfileDropdown user={user} />
+      </div>
+    );
   }
   
   return (
@@ -178,10 +179,10 @@ export default function Header({ className }: HeaderProps) {
           
         </div>
 
-      
-
         {/* Navigation */}
-        <NavLinks />
+        <div className="flex-1 overflow-hidden">
+          <NavLinks />
+        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-4">

@@ -4,8 +4,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { StarsBackground } from '@/components/ui/stars';
 import TrainingProgress from '@/components/ui/training-progress';
+import { withSubscriptionGuard } from '@/lib/hoc/withSubscriptionGuard';
 
-export default function TrainingPage() {
+function TrainingPage() {
   const params = useParams();
   const router = useRouter();
   const jobId = params.jobId as string;
@@ -208,4 +209,8 @@ export default function TrainingPage() {
       </div>
     </div>
   );
-}   
+}
+
+export default withSubscriptionGuard(TrainingPage, {
+  loadingMessage: "Verifying subscription for training access..."
+});   

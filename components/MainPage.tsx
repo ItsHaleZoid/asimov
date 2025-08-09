@@ -8,6 +8,7 @@ import { IoMdArrowDropright } from "react-icons/io";
 import { Space_Grotesk } from 'next/font/google';
 import { BlurFade } from './ui/blur-fade';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
 
 
 const spaceGrotesk = Space_Grotesk({
@@ -21,7 +22,7 @@ export default function Hero() {
   const [scrollY, setScrollY] = useState(0);
   const [selectedModel, setSelectedModel] = useState("");
   const router = useRouter();
-
+  const { user } = useAuth();
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
@@ -90,6 +91,8 @@ export default function Hero() {
           value={selectedModel}
           onChange={setSelectedModel}
         />
+
+        {user ? (
         <LiquidButton
           className={`${spaceGrotesk.className} font-medium transition-all duration-200 hover:scale-95 hover:shadow-lg text-xs`}
           size="xl"
@@ -108,6 +111,23 @@ export default function Hero() {
          </div>
           
         </LiquidButton>
+        ) : (
+          <LiquidButton
+          className={`${spaceGrotesk.className} font-medium transition-all duration-200 hover:scale-95 hover:shadow-lg text-xs`}
+          size="xl"
+          rounded="none"
+          variant="destructive"
+          onClick={() => router.push('/get-started')}
+          style={{
+            background: "linear-gradient(135deg, #000dff 0%, #6600ff 100%)",
+            color: "white",
+            
+          }}
+         
+        >
+            Fine Tune
+          </LiquidButton>
+        )}
         </div>
         </BlurFade>
       </div>
