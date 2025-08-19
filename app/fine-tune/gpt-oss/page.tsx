@@ -23,10 +23,10 @@ function FineTunePage() {
   const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
-  const [selectedDataset, setSelectedDataset] = useState<{ id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string } | null>(null);
+  const [selectedDataset, setSelectedDataset] = useState<{ id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string } | null>(null);
   const [selectedSubset, setSelectedSubset] = useState("");
   const [isStarting, setIsStarting] = useState(false);
-  const [filteredDatasets, setFilteredDatasets] = useState<{ id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }[]>([]);
+  const [filteredDatasets, setFilteredDatasets] = useState<{ id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string }[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -37,7 +37,7 @@ function FineTunePage() {
     }
   }, [user, authLoading, router]);
 
-  const handleDatasetSelect = (dataset: { id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }) => {
+  const handleDatasetSelect = (dataset: { id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string }) => {
     setSelectedDataset(dataset);
     setSelectedSubset(dataset.subsets?.[0] || ""); // Auto-select first subset
     setSearchQuery("");
@@ -66,10 +66,10 @@ function FineTunePage() {
 
       // Extract dataset ID from HuggingFace link
       const datasetId = selectedDataset.hf_link.split('/').slice(-2).join('/');
-      
+      const thinking_name = selectedDataset.thinking_name;
       console.log('Selected model_id:', selectedModel);
       
-      const response = await fetch('http://localhost:8000/api/start-training', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/start-training`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,6 +78,7 @@ function FineTunePage() {
         body: JSON.stringify({
           model_id: selectedModel,
           dataset_id: datasetId,
+          thinking_dataset: thinking_name,
           dataset_name: selectedDataset.name,
           dataset_subset: selectedSubset,
           model_name: (selectedModel)
@@ -252,7 +253,7 @@ function FineTunePage() {
           
           {/* Selected Dataset Display */}
           {selectedDataset && (
-            <div className="mt-4 p-4 bg-black/5 backdrop-blur-xl rounded-lg border border-white/20 -z-1"
+            <div className="mt-4 p-4 bg-black/5 backdrop-blur-xl rounded-lg border border-white/20 -z-1 max-w-2xl"
             style={{
               boxShadow: "0 30px 100px 0 rgba(0, 0, 0, 0.5)"
             }}>
@@ -293,5 +294,5 @@ function FineTunePage() {
 }
 
 export default withSubscriptionGuard(FineTunePage, {
-  loadingMessage: "Verifying subscription for GPT fine-tuning..."
+  loadingMessage: "Loading GPT-OSS Models..."
 });

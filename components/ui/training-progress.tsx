@@ -45,7 +45,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
         try {
           const { getAuthHeaders } = await import('@/lib/utils');
           const headers = await getAuthHeaders();
-          const response = await fetch(`http://localhost:8000/api/job/${job.id}`, { headers });
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/job/${job.id}`, { headers });
           if (response.ok) {
             const updatedJob = await response.json();
             handleJobUpdate(updatedJob);
@@ -55,7 +55,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
         }
       };
 
-      statusInterval = setInterval(fetchJobStatus, 5000);
+      statusInterval = setInterval(fetchJobStatus, 1000);
     }
     
     const timeInterval = setInterval(() => {
@@ -66,14 +66,13 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
       const hours = Math.floor(elapsed / 3600000);
       const minutes = Math.floor((elapsed % 3600000) / 60000);
       const seconds = Math.floor((elapsed % 60000) / 1000);
-      
       setElapsedTime(
         `${hours.toString().padStart(2, '0')}:${minutes
           .toString()
           .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
       );
     }, 1000);
-
+    
     return () => {
       if (statusInterval) clearInterval(statusInterval);
       clearInterval(timeInterval);

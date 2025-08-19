@@ -35,6 +35,9 @@ export default function Hero() {
       case "gpt-oss":
         router.push('/fine-tune/gpt-oss');
         break;
+      case "qwen":
+        router.push('/fine-tune/qwen');
+        break;
       default:
         break;
     }
@@ -78,8 +81,8 @@ export default function Hero() {
           rounded="default"
           variant="destructive"
           items={[
-            { label: "Mistral Family Models", value: "mistral-family" },
-            { label: "Gemma Family Models", value: "gemma-family" },
+            { label: "Qwen Models", value: "qwen" },
+            { label: "Gemma Models", value: "gemma-family" },
             { label: "GPT-OSS Models", value: "gpt-oss" },
             
           ]}

@@ -46,7 +46,7 @@ export default function AccountSettingsPage() {
     try {
       const { getAuthHeaders } = await import('@/lib/utils');
       const headers = await getAuthHeaders();
-      const response = await fetch('http://localhost:8000/api/user/hf-token/status', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/hf-token/status`, {
         headers
       });
       if (response.ok) {
@@ -66,7 +66,7 @@ export default function AccountSettingsPage() {
     try {
       const { getAuthHeaders } = await import('@/lib/utils');
       const headers = await getAuthHeaders();
-      const response = await fetch('http://localhost:8000/api/user/hf-token', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/hf-token`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ 
@@ -95,7 +95,7 @@ export default function AccountSettingsPage() {
     try {
       const { getAuthHeaders } = await import('@/lib/utils');
       const headers = await getAuthHeaders();
-      const response = await fetch('http://localhost:8000/api/user/hf-token', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/hf-token`, {
         method: 'DELETE',
         headers
       });

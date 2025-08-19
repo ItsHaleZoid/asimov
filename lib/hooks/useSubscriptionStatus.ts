@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/lib/auth-context'
 
 interface SubscriptionStatus {
@@ -27,7 +27,7 @@ export function useSubscriptionStatus(): SubscriptionStatus {
   const [status, setStatus] = useState<string | null>(null)
   const [lastBillingDate, setLastBillingDate] = useState<string | null>(null)
 
-  const fetchSubscriptionStatus = async () => {
+  const fetchSubscriptionStatus = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -80,7 +80,7 @@ export function useSubscriptionStatus(): SubscriptionStatus {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [session])
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -92,7 +92,7 @@ export function useSubscriptionStatus(): SubscriptionStatus {
       setLastBillingDate(null)
       setIsLoading(false)
     }
-  }, [authLoading, user, session])
+  }, [authLoading, user, fetchSubscriptionStatus])
 
   return {
     isSubscribed,

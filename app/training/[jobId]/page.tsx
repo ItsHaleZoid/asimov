@@ -21,7 +21,7 @@ function TrainingPage() {
       try {
         const { getAuthHeaders } = await import('@/lib/utils');
         const headers = await getAuthHeaders();
-        const res = await fetch(`http://localhost:8000/api/job/${jobId}`, { headers });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/job/${jobId}`, { headers });
         if (!res.ok) throw new Error('Job not found');
         const data = await res.json();
         setJob(data);
@@ -34,7 +34,7 @@ function TrainingPage() {
     fetchInitialJob();
 
     // Connect WebSocket for real-time updates
-    const websocket = new WebSocket(`ws://localhost:8000/ws/${jobId}`);
+    const websocket = new WebSocket(`ws://${process.env.NEXT_PUBLIC_API_URL?.replace('http://', '')}/ws/${jobId}`);
     
     websocket.onopen = () => {
       console.log('WebSocket connected');
@@ -133,7 +133,7 @@ function TrainingPage() {
         console.log('🔄 Polling job status...');
         const { getAuthHeaders } = await import('@/lib/utils');
         const headers = await getAuthHeaders();
-        const response = await fetch(`http://localhost:8000/api/job/${jobId}`, { headers });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/job/${jobId}`, { headers });
         if (response.ok) {
           const data = await response.json();
           console.log('📡 Polling received job data:', data);
@@ -165,7 +165,7 @@ function TrainingPage() {
     try {
       const { getAuthHeaders } = await import('@/lib/utils');
       const headers = await getAuthHeaders();
-      const response = await fetch(`http://localhost:8000/api/job/${jobId}/cancel`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/job/${jobId}/cancel`, {
         method: 'POST',
         headers
       });
@@ -204,7 +204,7 @@ function TrainingPage() {
             onJobUpdate={setJob}
           />
         ) : (
-          <div className="text-white text-2xl">Loading training job...</div>
+          <div className="text-white text-2xl">Done.</div>
         )}
       </div>
     </div>
@@ -212,5 +212,5 @@ function TrainingPage() {
 }
 
 export default withSubscriptionGuard(TrainingPage, {
-  loadingMessage: "Verifying subscription for training access..."
+  loadingMessage: "Loading training job..."
 });   

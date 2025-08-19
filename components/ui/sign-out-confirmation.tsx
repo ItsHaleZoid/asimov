@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gabarito } from "next/font/google";
+import Image from "next/image";
 
 const gabarito = Gabarito({
   weight: ["400", "500", "600"],
@@ -53,9 +54,11 @@ export function SignOutConfirmation({ isOpen, onConfirm, onCancel, user, classNa
             {/* User Info */}
             <div className="text-center mb-6">
               <div className="mb-4">
-                <img
+                <Image
                   src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '/default-avatar.png'}
                   alt="Profile"
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-full object-cover mx-auto border-2 border-white/20"
                 />
               </div>

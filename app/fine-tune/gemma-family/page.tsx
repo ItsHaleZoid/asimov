@@ -23,10 +23,10 @@ function FineTunePage() {
   const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
-  const [selectedDataset, setSelectedDataset] = useState<{ id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string } | null>(null);
+  const [selectedDataset, setSelectedDataset] = useState<{ id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string } | null>(null);
   const [selectedSubset, setSelectedSubset] = useState("");
   const [isStarting, setIsStarting] = useState(false);
-  const [filteredDatasets, setFilteredDatasets] = useState<{ id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }[]>([]);
+  const [filteredDatasets, setFilteredDatasets] = useState<{ id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string }[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -37,7 +37,7 @@ function FineTunePage() {
     }
   }, [user, authLoading, router]);
 
-  const handleDatasetSelect = (dataset: { id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }) => {
+  const handleDatasetSelect = (dataset: { id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string }) => {
     setSelectedDataset(dataset);
     setSelectedSubset(dataset.subsets?.[0] || ""); // Auto-select first subset
     setSearchQuery("");
@@ -66,10 +66,10 @@ function FineTunePage() {
 
       // Extract dataset ID from HuggingFace link
       const datasetId = selectedDataset.hf_link.split('/').slice(-2).join('/');
-      
+      const thinking_name = selectedDataset.thinking_name;
       console.log('Selected model_id:', selectedModel);
       
-      const response = await fetch('http://localhost:8000/api/start-training', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/start-training`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,8 @@ function FineTunePage() {
           dataset_id: datasetId,
           dataset_name: selectedDataset.name,
           dataset_subset: selectedSubset,
-          model_name: (selectedModel)
+          model_name: (selectedModel),
+          thinking_dataset: thinking_name,
         }),
       });
 
@@ -169,11 +170,11 @@ function FineTunePage() {
         
        
       <div className="absolute top-0 left-0 w-full h-full rotate-180 mt-20 transform skew-x-2 skew-y-1 scale-105">
-        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#029aff] via-[#000000] to-transparent blur-3xl" 
+        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#02ccff] via-[#000000] to-transparent blur-3xl" 
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
         <div className="absolute -top-100 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#0037ff] via-amber-50/4 to-transparent blur-[80px] rounded-full"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%", mixBlendMode: "screen"}}></div>
-        <div className="absolute -top-50 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#8cfdff] via-transparent to-transparent blur-[500px] rounded-full -z-10"
+        <div className="absolute -top-50 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#0033ff] via-transparent to-transparent blur-[500px] rounded-full -z-10"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
       </div>
       
@@ -255,7 +256,7 @@ function FineTunePage() {
           
           {/* Selected Dataset Display */}
           {selectedDataset && (
-            <div className="mt-4 p-4 bg-black/5 backdrop-blur-xl rounded-lg border border-white/20 -z-1"
+            <div className="mt-4 p-4 bg-black/5 backdrop-blur-xl rounded-lg border border-white/20 -z-1 max-w-2xl"
             style={{
               boxShadow: "0 30px 100px 0 rgba(0, 0, 0, 0.5)"
             }}>
@@ -296,5 +297,5 @@ function FineTunePage() {
 }
 
 export default withSubscriptionGuard(FineTunePage, {
-  loadingMessage: "Verifying subscription for Gemma fine-tuning..."
+  loadingMessage: "Loading Gemma Family Models..."
 });

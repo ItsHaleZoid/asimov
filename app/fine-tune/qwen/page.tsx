@@ -23,12 +23,62 @@ function FineTunePage() {
   const { user, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
-  const [selectedDataset, setSelectedDataset] = useState<{ id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string } | null>(null);
+  const [selectedDataset, setSelectedDataset] = useState<{ id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string } | null>(null);
   const [selectedSubset, setSelectedSubset] = useState("");
   const [isStarting, setIsStarting] = useState(false);
-  const [filteredDatasets, setFilteredDatasets] = useState<{ id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }[]>([]);
+  const [filteredDatasets, setFilteredDatasets] = useState<{ id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string }[]>([]);
+  const [hasRunningJob, setHasRunningJob] = useState(false);
+  const [runningJobId, setRunningJobId] = useState<string | null>(null);
+  const [loadingJobStatus, setLoadingJobStatus] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Check for running jobs
+  useEffect(() => {
+    const checkRunningJobs = async () => {
+      if (!user) {
+        setLoadingJobStatus(false);
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          setLoadingJobStatus(false);
+          return;
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/jobs`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const activeJob = data.jobs?.find((job: any) => 
+            ['initializing', 'preparing', 'searching_gpu', 'found_gpu', 'creating_instance', 
+             'instance_ready', 'uploading_script', 'loading_model', 'loading_dataset', 
+             'training', 'saving', 'uploading_model'].includes(job.status)
+          );
+
+          if (activeJob) {
+            setHasRunningJob(true);
+            setRunningJobId(activeJob.id);
+          } else {
+            setHasRunningJob(false);
+            setRunningJobId(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking running jobs:', error);
+      } finally {
+        setLoadingJobStatus(false);
+      }
+    };
+
+    checkRunningJobs();
+  }, [user]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -37,7 +87,7 @@ function FineTunePage() {
     }
   }, [user, authLoading, router]);
 
-  const handleDatasetSelect = (dataset: { id: string; name: string; description: string; subsets: string[]; downloads: number; hf_link: string; likes: number; category: string }) => {
+  const handleDatasetSelect = (dataset: { id: string; name: string; thinking_name: string | null; description: string; subsets: string[]; hf_link: string; category: string }) => {
     setSelectedDataset(dataset);
     setSelectedSubset(dataset.subsets?.[0] || ""); // Auto-select first subset
     setSearchQuery("");
@@ -55,6 +105,15 @@ function FineTunePage() {
       return;
     }
 
+    // Allow multiple concurrent jobs - removed restriction
+    // if (hasRunningJob) {
+    //   alert("You already have a running job. Please wait for it to complete before starting a new one.");
+    //   if (runningJobId) {
+    //     router.push(`/training/${runningJobId}`);
+    //   }
+    //   return;
+    // }
+
     setIsStarting(true);
 
     try {
@@ -66,8 +125,8 @@ function FineTunePage() {
 
       // Extract dataset ID from HuggingFace link
       const datasetId = selectedDataset.hf_link.split('/').slice(-2).join('/');
-      
-      const response = await fetch('http://localhost:8000/api/start-training', {
+      const thinking_name = selectedDataset.thinking_name;
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/start-training`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +137,8 @@ function FineTunePage() {
           dataset_id: datasetId,
           dataset_name: selectedDataset.name,
           dataset_subset: selectedSubset,
-          model_name: (selectedModel)
+          model_name: (selectedModel),
+          thinking_dataset: thinking_name || "bespokelabs/bespoke-manim",
         }),
       });
 
@@ -161,11 +221,11 @@ function FineTunePage() {
       
 
       <div className="absolute top-0 left-0 w-full h-full rotate-180 mt-20 transform skew-x-2 skew-y-1 scale-105">
-        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#ff9500] via-[#000000] to-transparent blur-3xl" 
+        <div className="relative -top-300 left-1/2 transform -translate-x-1/2 rotate-180 w-[2300px] h-[1500px] bg-gradient-to-b from-[#c574ff] via-[#000000] to-transparent blur-3xl" 
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
-        <div className="absolute -top-100 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#ffc400] via-amber-50/4 to-transparent blur-[80px] rounded-full"
+        <div className="absolute -top-100 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#e0cae8] via-amber-50/4 to-transparent blur-[80px] rounded-full"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%", mixBlendMode: "screen"}}></div>
-        <div className="absolute -top-50 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#ff8800] via-transparent to-transparent blur-[500px] rounded-full -z-10"
+        <div className="absolute -top-50 left-1/2 transform -translate-x-1/2 w-[1300px] rotate-180 h-[600px] bg-gradient-to-b from-[#7b25fc] via-transparent to-transparent blur-[500px] rounded-full -z-10"
            style={{borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%"}}></div>
       </div>
       
@@ -174,14 +234,14 @@ function FineTunePage() {
       <div className="flex flex-col items-center justify-center min-h-screen relative z-10">
         <div className="flex flex-col items-center justify-center mt-40">
           <BlurFade delay={0} className="-mb-12">
-            <h1 className="text-5xl font-light px-4 py-2 rounded-full bg-gradient-to-r from-[rgb(255,244,206)] to-[#ffae70] bg-clip-text text-transparent -mb-4 -mt-25 z-20">
-              Fine-Tune Mistral Family Models
+            <h1 className="text-5xl font-light px-4 py-2 rounded-full bg-gradient-to-r from-[rgb(254,254,255)] to-[#b68efa] bg-clip-text text-transparent -mb-4 -mt-25 z-20">
+              Fine-Tune Qwen Models
             </h1>
           </BlurFade>
           <BlurFade delay={0.1} className="-mb-12">
-          <div className="flex flex-row items-center justify-center relative w-full z-10">
-            <p className="text-xl -mt-2 -mr-2">By</p>
-          <Image src="/mistral-wordmark-logo.png" alt="Mistral" width={180} height={20} className="brightness-0 invert opacity-80" />
+          <div className="flex flex-row items-center justify-center relative w-full z-10 mt-6">
+            <p className="text-xl -mt-1 mr-2">By</p>
+          <Image src="/qwen.png" alt="Qwen" width={40} height={40} className="brightness-0 invert opacity-80" />
           </div>
           </BlurFade>
         </div>
@@ -197,9 +257,9 @@ function FineTunePage() {
             <LiquidDropdown
               placeholder="Select a model"
               items={[
-                { label: "Mistral Instruct (7B)", value: "mistralai/Mistral-7B-Instruct-v0.3" },
-                { label: "Mistral Small Instruct (24B)", value: "mistralai/Mistral-Small-Instruct-2409" },
-                { label: "Mistral Large Instruct (123B)", value: "mistralai/Mistral-Large-Instruct-2407" },
+                { label: "Qwen 4B Thinking", value: "Qwen/Qwen3-4B-Thinking-2507" },
+                { label: "Qwen 30B Thinking", value: "Qwen/Qwen3-30B-A3B-Thinking-2507" },
+                { label: "Qwen 235B Thinking (FP8)", value: "Qwen/Qwen3-235B-A22B-Thinking-2507-FP8" },
               ]}
               value={selectedModel}
               onChange={setSelectedModel}
@@ -254,24 +314,48 @@ function FineTunePage() {
           )}
           </BlurFade>
 
+          {/* Running Job Warning */}
+          {hasRunningJob && !loadingJobStatus && (
+            <BlurFade delay={0.35}>
+            <div className="mt-4 p-4 bg-orange-500/10 backdrop-blur-xl rounded-lg border border-orange-500/30 w-full max-w-2xl"
+              style={{
+                boxShadow: "0 30px 100px 0 rgba(251, 146, 60, 0.3)"
+              }}>
+              <p className="text-orange-300 text-sm font-medium">⚠️ Job Already Running</p>
+              <p className="text-orange-200/80 text-xs mt-1">
+                You already have a training job in progress. Please wait for it to complete before starting a new one.
+              </p>
+              {runningJobId && (
+                <button
+                  onClick={() => router.push(`/training/${runningJobId}`)}
+                  className="mt-2 text-orange-300 text-xs underline hover:text-orange-200 transition-colors"
+                >
+                  View Running Job →
+                </button>
+              )}
+            </div>
+            </BlurFade>
+          )}
+
           {/* Fine Tune Button */}
           <BlurFade delay={0.4}>
           <LiquidButton
             className="mt-6 px-8 py-3"
             size="xl"
             onClick={handleFineTune}
-            disabled={!selectedModel || !selectedDataset || !selectedSubset || isStarting}
+            disabled={!selectedModel || !selectedDataset || !selectedSubset || isStarting || loadingJobStatus}
             style={{
-              background: selectedModel && selectedDataset && selectedSubset 
-                ? "linear-gradient(135deg, #ff6f00 0%, #ffc400 100%)"
+              background: selectedModel && selectedDataset && selectedSubset
+                ? "linear-gradient(135deg, #6f03fc 0%, #a927f0 100%)"
                 : "linear-gradient(135deg, #333 0%, #555 100%)",
-              color: selectedModel && selectedDataset && selectedSubset ? "black" : "white",
-              opacity: selectedModel && selectedDataset && selectedSubset && !isStarting ? 1 : 0.5,
-              cursor: selectedModel && selectedDataset && selectedSubset && !isStarting ? "pointer" : "not-allowed",
-              border: selectedModel && selectedDataset && selectedSubset ? "0 30px 100px 0 rgba(0, 0, 0, 0.8)" : "0 30px 100px 0 rgba(0, 0, 0, 0.8)",
+              color: "white",
+              opacity: selectedModel && selectedDataset && selectedSubset && !isStarting && !loadingJobStatus ? 1 : 0.5,
+              cursor: selectedModel && selectedDataset && selectedSubset && !isStarting && !loadingJobStatus ? "pointer" : "not-allowed",
+              border: "0 30px 100px 0 rgba(0, 0, 0, 0.8)",
             }}
           >
-            {isStarting ? "Starting..." : "Start Fine-Tuning"}
+            {loadingJobStatus ? "Checking..." : 
+             isStarting ? "Starting..." : "Start Fine-Tuning"}
           </LiquidButton>
           </BlurFade>
         </div>
@@ -281,5 +365,5 @@ function FineTunePage() {
 }
 
 export default withSubscriptionGuard(FineTunePage, {
-  loadingMessage: "Verifying subscription for Mistral fine-tuning..."
+  loadingMessage: "Loading Qwen Models..."
 });

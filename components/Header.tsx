@@ -64,7 +64,7 @@ function ProfileDropdown({ user }: { user: MinimalUser | null }) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 p-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors px-4"
       >
-        <Image
+        <img
           src={user?.user_metadata?.avatar_url || user?.user_metadata?.picture || '/default-avatar.png'}
           alt="Profile"
           width={32}

@@ -35,7 +35,7 @@ export default function InstanceStatusButton({ className }: InstanceStatusButton
     
     try {
       const headers = await getAuthHeaders();
-      const response = await fetch('http://localhost:8000/api/jobs', { headers });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/jobs`, { headers });
       
       if (!response.ok) {
         throw new Error('Failed to fetch jobs');
