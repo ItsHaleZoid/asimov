@@ -164,11 +164,11 @@ function AuthButtons() {
 export default function Header({ className }: HeaderProps) {
   const router = useRouter();
   return (
-    <header className={`fixed  left-0 right-0 w-full z-500 backdrop-blur-sm border-b border-white/25 ${className}`}>
+    <header className={`fixed top-0 left-0 right-0 w-full z-50 backdrop-blur-sm bg-gradient-to-b from-black/90 via-black/20 to-transparent ${className}`}>
       <div className="flex items-center justify-between px-6 py-4 md:px-8 lg:px-12">
         {/* Logo */}
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
-          <Image src="/logo-flat-transparent.png" alt="Logo" width={76} height={76} className="h-19 -my-3 w-auto cursor-pointer" />
+          <Image src="/asimov.png" alt="Logo" width={4000} height={4000} className="h-44 -my-11 w-auto cursor-pointer" />
         </div>
 
         {/* Navigation */}

@@ -8,16 +8,21 @@ import { useRouter } from 'next/navigation';
 
 interface TrainingProgressProps {
   job: {
-    id: string;
-    status: string;
-    progress: number;
-    logs: Array<{ timestamp: string; message: string; type?: string }>;
-    model_name: string;
-    dataset_name: string;
-    start_time: string;
-    instance_id?: string;
+    job_id: string;
+    job_status: string;
+    model_id: string;
+    dataset_id: string;
+    model_name?: string;
+    dataset_name?: string;
+    together_job_id?: string;
+    output_name?: string;
+    created_at: string;
+    updated_at: string;
+    error_message?: string;
     config?: {
-      lora_model_repo: string;
+      epochs?: number;
+      batch_size?: number;
+      learning_rate?: number;
     };
   };
   onCancel: () => void;
@@ -38,28 +43,8 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
   }, [onJobUpdate]);
 
   useEffect(() => {
-    let statusInterval: NodeJS.Timeout | null = null;
-    
-    if (enablePolling) {
-      const fetchJobStatus = async () => {
-        try {
-          const { getAuthHeaders } = await import('@/lib/utils');
-          const headers = await getAuthHeaders();
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/job/${job.id}`, { headers });
-          if (response.ok) {
-            const updatedJob = await response.json();
-            handleJobUpdate(updatedJob);
-          }
-        } catch (error) {
-          console.error('Failed to fetch job status:', error);
-        }
-      };
-
-      statusInterval = setInterval(fetchJobStatus, 1000);
-    }
-    
     const timeInterval = setInterval(() => {
-      const start = new Date(job.start_time).getTime();
+      const start = new Date(job.created_at).getTime();
       const now = new Date().getTime();
       const elapsed = now - start;
       
@@ -73,36 +58,20 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
       );
     }, 1000);
     
-    return () => {
-      if (statusInterval) clearInterval(statusInterval);
-      clearInterval(timeInterval);
-    };
-  }, [job.id, job.start_time, enablePolling, handleJobUpdate]);
+    return () => clearInterval(timeInterval);
+  }, [job.created_at]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'initializing':
-      case 'preparing':
+      case 'pending':
         return 'text-blue-400';
-      case 'searching_gpu':
-      case 'found_gpu':
-      case 'creating_instance':
+      case 'running':
+      case 'submitted':
         return 'text-yellow-400';
-      case 'instance_ready':
-      case 'uploading_script':
-      case 'training':
-      case 'loading_model':
-      case 'loading_dataset':
-        return 'text-green-400';
-      case 'saving':
-      case 'uploading_model':
-        return 'text-purple-400';
       case 'completed':
         return 'text-green-500';
       case 'failed':
         return 'text-red-500';
-      case 'cancelled':
-        return 'text-orange-500';
       default:
         return 'text-gray-400';
     }
@@ -122,26 +91,29 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
 
   const getStatusText = (status: string) => {
     const statusMap: { [key: string]: string } = {
-      'initializing': 'Initializing training environment...',
-      'preparing': 'Preparing configuration...',
-      'searching_gpu': 'Searching for available GPU...',
-      'found_gpu': 'GPU found! Negotiating price...',
-      'creating_instance': 'Creating compute instance...',
-      'instance_ready': 'Instance ready! Setting up environment...',
-      'uploading_script': 'Uploading training scripts...',
-      'loading_model': 'Loading model weights...',
-      'loading_dataset': 'Loading dataset...',
-      'training': 'Training in progress...',
-      'saving': 'Saving model checkpoint...',
-      'uploading_model': 'Uploading to HuggingFace Hub...',
+      'pending': 'Preparing to start training...',
+      'running': 'Training in progress...',
+      'submitted': 'Job submitted to Together AI...',
       'completed': 'Training completed successfully!',
-      'failed': 'Training failed',
-      'cancelled': 'Training cancelled'
+      'failed': 'Training failed'
     };
     return statusMap[status] || `Status: ${status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}`;
   };
 
-  const isFinished = ['completed', 'failed', 'cancelled'].includes(job.status);
+  // Calculate progress based on status
+  const getProgress = (status: string) => {
+    switch (status) {
+      case 'pending': return 10;
+      case 'submitted': return 25;
+      case 'running': return 75;
+      case 'completed': return 100;
+      case 'failed': return 0;
+      default: return 0;
+    }
+  };
+
+  const progress = getProgress(job.job_status);
+  const isFinished = ['completed', 'failed'].includes(job.job_status);
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-20">
@@ -151,7 +123,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
           {isFinished ? 'Training Complete' : 'Fine-Tuning in Progress'}
         </h1>
         <p className="text-xl text-white/60">
-          {job.model_name} with {job.dataset_name} Dataset
+          {job.model_id} with {job.dataset_id}
         </p>
       </div>
 
@@ -164,13 +136,13 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
           {/* Status */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <div className={getStatusColor(job.status)}>
-                {getStatusIcon(job.status)}
+              <div className={getStatusColor(job.job_status)}>
+                {getStatusIcon(job.job_status)}
               </div>
               <div>
                 <p className="text-white/60 text-sm mb-1">Status</p>
-                <p className={cn("text-2xl font-light", getStatusColor(job.status))}>
-                  {getStatusText(job.status)}
+                <p className={cn("text-2xl font-light", getStatusColor(job.job_status))}>
+                  {getStatusText(job.job_status)}
                 </p>
               </div>
             </div>
@@ -185,13 +157,13 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
             <div className="mb-8">
               <div className="flex justify-between items-center mb-2">
                 <p className="text-white/60 text-sm">Progress</p>
-                <p className="text-white/60 text-sm">{job.progress}%</p>
+                <p className="text-white/60 text-sm">{progress}%</p>
               </div>
               <div className="relative h-4 bg-white/5 rounded-full overflow-hidden">
                 <motion.div
                   className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-blue-500"
                   initial={{ width: 0 }}
-                  animate={{ width: `${job.progress}%` }}
+                  animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
                 />
                 {/* Shimmer effect */}
@@ -212,8 +184,8 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
 
           {/* Visual Progress Indicators */}
           <div className="grid grid-cols-4 gap-4 mb-8">
-            {['Setup', 'GPU Allocation', 'Training', 'Finalization'].map((stage, index) => {
-              const stageProgress = job.progress / 25 - index;
+            {['Setup', 'Submission', 'Training', 'Completion'].map((stage, index) => {
+              const stageProgress = progress / 25 - index;
               const isActive = stageProgress > 0;
               const isComplete = stageProgress >= 1;
               
@@ -265,52 +237,68 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
             })}
           </div>
 
-          {/* Instance Info */}
-          {job.instance_id && (
+          {/* Together AI Job Info */}
+          {job.together_job_id && (
             <div className="mb-6 p-3 bg-white/5 rounded-lg">
               <p className="text-white/60 text-sm">
-                Vast.ai Instance: <span className="text-white font-mono">{job.instance_id}</span>
+                Together AI Job: <span className="text-white font-mono">{job.together_job_id}</span>
               </p>
             </div>
           )}
 
-          {/* Logs Section */}
+          {/* Configuration Info */}
+          {job.config && (
+            <div className="mb-6 p-3 bg-white/5 rounded-lg">
+              <p className="text-white/60 text-sm mb-2">Training Configuration:</p>
+              <div className="grid grid-cols-3 gap-4 text-xs">
+                <div>
+                  <span className="text-white/40">Epochs:</span>{' '}
+                  <span className="text-white">{job.config.epochs || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-white/40">Batch Size:</span>{' '}
+                  <span className="text-white">{job.config.batch_size || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-white/40">Learning Rate:</span>{' '}
+                  <span className="text-white">{job.config.learning_rate || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {job.error_message && (
+            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <p className="text-red-400 text-sm">
+                <strong>Error:</strong> {job.error_message}
+              </p>
+            </div>
+          )}
+
+          {/* Job Details Section */}
           <div className="border-t border-white/10 pt-6">
-            <button
-              onClick={() => setShowLogs(!showLogs)}
-              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-            >
-              {showLogs ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              <span className="text-sm">View Logs ({job.logs.length})</span>
-            </button>
-            
-            <AnimatePresence>
-              {showLogs && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-4 max-h-64 overflow-y-auto bg-black/40 rounded-lg p-4 font-mono text-xs">
-                    {job.logs.map((log, index) => (
-                      <div key={index} className="mb-2">
-                        <span className="text-white/40">
-                          {new Date(log.timestamp).toLocaleTimeString()}
-                        </span>
-                        <span className={cn(
-                          "ml-2",
-                          log.type === 'status' ? "text-blue-400" : "text-white/80"
-                        )}>
-                          {log.message}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
+            <div className="text-white/60 text-sm mb-4">Job Information</div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-white/40">Job ID:</span>
+                <span className="text-white font-mono">{job.job_id}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/40">Created:</span>
+                <span className="text-white">{new Date(job.created_at).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/40">Updated:</span>
+                <span className="text-white">{new Date(job.updated_at).toLocaleString()}</span>
+              </div>
+              {job.output_name && (
+                <div className="flex justify-between">
+                  <span className="text-white/40">Output Model:</span>
+                  <span className="text-green-400">{job.output_name}</span>
+                </div>
               )}
-            </AnimatePresence>
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -341,9 +329,9 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
                 >
                   Back to Models
                 </LiquidButton>
-                {job.status === 'completed' && (
+                {job.job_status === 'completed' && job.output_name && (
                   <LiquidButton
-                    onClick={() => window.open(`https://huggingface.co/${job.config?.lora_model_repo}`, '_blank')}
+                    onClick={() => window.open(`https://huggingface.co/${job.output_name}`, '_blank')}
                     size="lg"
                     className="flex-1"
                     style={{
@@ -361,7 +349,7 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
       </div>
 
       {/* Success Animation */}
-      {job.status === 'completed' && (
+      {job.job_status === 'completed' && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -370,7 +358,10 @@ export default function TrainingProgress({ job, onCancel, onBackToModels, enable
         >
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-green-500/10 border border-green-500/20 rounded-full">
             <CheckCircle className="w-5 h-5 text-green-500" />
-            <span className="text-green-500">Model successfully uploaded to HuggingFace!</span>
+            <span className="text-green-500">
+              Fine-tuning completed successfully!
+              {job.output_name && ' Model available on HuggingFace.'}
+            </span>
           </div>
         </motion.div>
       )}

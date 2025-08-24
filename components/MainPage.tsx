@@ -68,7 +68,7 @@ export default function Hero() {
         </BlurFade>
         <BlurFade delay={0.4} duration={0.6} > 
         <h1 className="text-6xl lg:text-7xl bg-gradient-to-b from-white via-gray-200 to-gray-500 bg-clip-text text-transparent font-light leading-tight mb-4">
-          Select AI models to Fine-Tune <br />
+          Run customized AI models <br />
         </h1>
         </BlurFade>
         <BlurFade delay={0.8} duration={0.6} > 
