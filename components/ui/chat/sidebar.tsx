@@ -4,6 +4,7 @@ import { MessageSquare, Plus, Settings, User, History, ChevronLeft, ChevronRight
 import { useState } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export default function Sidebar() {
   const [isMinimized, setIsMinimized] = useState(false)
@@ -12,7 +13,7 @@ export default function Sidebar() {
   const router = useRouter()
 
   const models = [
-    { id: 'manim', name: 'Manim', image: '/models/gpt4.png' , onClick: () => {
+    { id: 'manim', name: 'Manim', image: '/manim.png' , onClick: () => {
       router.push('chat/manim')
     }},
     { id: 'create-own', name: 'Create your own', image: null, isComingSoon: true },
@@ -21,18 +22,18 @@ export default function Sidebar() {
   return (
     <div className={cn(
       "flex flex-col h-full bg-black/50 border-r border-white/20 backdrop-blur-sm transition-all duration-300",
-      isMinimized ? "w-16" : "w-64"
+      isMinimized ? "w-20" : "w-64"
     )}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-white/20 min-h-[72px]">
         <div className="overflow-hidden">
-          {!isMinimized && <h2 className="text-lg font-semibold text-white whitespace-nowrap">Asimov</h2>}
+          {!isMinimized && <Image src="/asimov-full.png" alt="Asimov" width={100} height={100} />}
         </div>
         <button 
           onClick={() => setIsMinimized(!isMinimized)}
           className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors ml-auto shrink-0"
         >
-          {isMinimized ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+          {isMinimized ? <ChevronRight className="h-5 w-5 mr-2" /> : <ChevronLeft className="h-5 w-5" />}
         </button>
       </div>
 
@@ -48,24 +49,8 @@ export default function Sidebar() {
               {!isMinimized && <span className="whitespace-nowrap">New Chat</span>}
             </div>
           </button>
-          <button className={cn(
-            "flex items-center w-full p-3 text-left text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors min-h-[48px]",
-            isMinimized ? "justify-center" : "gap-3"
-          )}>
-            <MessageSquare className="h-5 w-5 shrink-0" />
-            <div className="overflow-hidden">
-              {!isMinimized && <span className="whitespace-nowrap">New Chat</span>}
-            </div>
-          </button>
-          <button className={cn(
-            "flex items-center w-full p-3 text-left text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors min-h-[48px]",
-            isMinimized ? "justify-center" : "gap-3"
-          )}>
-            <History className="h-5 w-5 shrink-0" />
-            <div className="overflow-hidden">
-              {!isMinimized && <span className="whitespace-nowrap">Chat History</span>}
-            </div>
-          </button>
+          
+          
         </nav>
 
         {/* Models */}
@@ -86,7 +71,7 @@ export default function Sidebar() {
                       <img
                         src={model.image}
                         alt={model.name}
-                        className="w-6 h-6 rounded-full object-cover shrink-0"
+                        className="w-7 h-5  shrink-5"
                       />
                     ) : (
                       <div className="w-6 h-6 rounded-full bg-white/12 p-1 flex items-center justify-center shrink-0">
@@ -114,7 +99,7 @@ export default function Sidebar() {
                     <img
                       src={model.image}
                       alt={model.name}
-                      className="w-6 h-6 rounded-full object-cover"
+                      className="w-7 h-6"
                     />
                   ) : (
                     <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
